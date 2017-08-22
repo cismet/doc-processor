@@ -9,12 +9,13 @@ services:
     network_mode: bridge
     environment:
       MYVAR: none
-#      VIRTUAL_HOST: verdis-api.cismet.de
-#      VIRTUAL_PORT: 8890
-#      LETSENCRYPT_HOST: verdis-api.cismet.de
+#      VIRTUAL_HOST: doc-processor.cismet.de
+#      VIRTUAL_PORT: 8081
+#      LETSENCRYPT_HOST: doc-processor.cismet.de
 #      LETSENCRYPT_EMAIL: th@cismet.de
-#      HTTPS_METHOD: noredirect
+#      HTTPS_METHOD: redirect
     volumes:
-        - ./server:/cidsDistribution/server/
+        - ./localConfig.json:/usr/src/app/config.json
+        - ./servicetmp:/usr/src/app/tmp
     ports:
         - "8081:8081"
