@@ -6,7 +6,7 @@ var async = require('async');
 var http = require('http');
 var https = require('https');
 var path = require('path');
-const debug = require('debug')('doc-processor-server')  
+const debug = require('debug')('doc-processor-server')
 
 exports.zip = function zip(conf, job, res, next) {
     var nonce = job.name + "-" + Math.floor(Math.random() * 10000000);
@@ -86,10 +86,10 @@ exports.zip = function zip(conf, job, res, next) {
                     res.writeHead(e.code);
                     res.end(e.message);
                     next(e);
-                   debug(error);
+                    debug(error);
                 } else {
                     //return the result
-                    var filepath = __dirname + "/../tmp/job-zip-" + nonce + "/out.zip";
+                    var filepath = jobdir + "/out.zip";
                     fs.readFile(filepath, function (err, data) {
                         if (err) {
                             res.writeHead(500);
@@ -103,12 +103,15 @@ exports.zip = function zip(conf, job, res, next) {
                             "Content-Disposition": "attachment;filename=" + job.name + ".zip"
                         });
                         res.end(data);
+                        if (!conf.keepFilesForDebugging) {
+                            debug("remove " + jobdir);
+                            execSync("rm -rf  " + jobdir);
+                        }
                         return next();
                     });
                 }
             });
-        }
-        else {
+        } else {
             debug("Zipping skipped due to an error", err);
         }
     });
