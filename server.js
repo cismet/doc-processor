@@ -19,7 +19,7 @@ if (extConf.customExtensions !== undefined) {
 
 var defaults = {
     "port": 8081,
-    "host": "localhost",
+    "host": "0.0.0.0",
     "workers": 10,
     "tmpFolder": "./tmp/",
     "keepFilesForDebugging": false,
