@@ -56,7 +56,8 @@ docker build -t cismet/doc-processor .
     "keepFilesForDebugging": false,
     "speechComments": false,
     "processors": ["zip", "pdfmerge"]
-}```
+}
+```
 
 ```
 
@@ -68,8 +69,8 @@ docker build -t cismet/doc-processor .
     "speechComments": if you are on a mac, set to true to hear from your app (obviously doesn't work with docker)
 ```
 
-
 ## start
+
 ```bash
 npm start
 ```
