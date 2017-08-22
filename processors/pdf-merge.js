@@ -1,7 +1,7 @@
 var execSync = require('child_process').execSync;
 var execAsync = require('child_process').exec;
 var numeral = require('numeral');
-const debug = require('debug')('doc-processor-server')  
+const debug = require('debug')('doc-processor-server')
 
 exports.pdfmerge = function merge(conf, job, res, next) {
     if (conf.speechComments) {
@@ -119,6 +119,10 @@ exports.pdfmerge = function merge(conf, job, res, next) {
                             "Content-Disposition": "attachment;filename=" + job.name + ".pdf"
                         });
                         res.end(data);
+                        if (!conf.keepFilesForDebugging) {
+                            debug("remove " + jobdir);
+                            execSync("rm -rf  " + jobdir);
+                        }
                         return next();
                     });
                 }

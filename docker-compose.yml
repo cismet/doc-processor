@@ -1,0 +1,21 @@
+version: '2'
+
+services:
+
+  verdis-rest:
+    container_name: doc-processor.cismet.de
+    image: cismet/doc-processor:latest
+    restart: always
+    network_mode: bridge
+    environment:
+      MYVAR: none
+#      VIRTUAL_HOST: doc-processor.cismet.de
+#      VIRTUAL_PORT: 8081
+#      LETSENCRYPT_HOST: doc-processor.cismet.de
+#      LETSENCRYPT_EMAIL: th@cismet.de
+#      HTTPS_METHOD: redirect
+    volumes:
+        - ./localConfig.json:/usr/src/app/config.json
+        - ./servicetmp:/usr/src/app/tmp
+    ports:
+        - "8081:8081"
