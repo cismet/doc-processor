@@ -50,6 +50,19 @@ describe('Basic Tests', () => {
     });
   });
 
+  describe('GET /api/wrongprocessor/and/wait', () => {
+    it('it should return a 405 status code +  description (wrong processor)', (done) => {
+      chai.request(server)
+        .get('/api/wrongprocessor/and/wait')
+        .end((err, res) => {
+          res.should.have.status(405);
+          res.body.should.be.equal("No processor found. And wrong method. Sad!");
+          done();
+        });
+    });
+  });
+
+
   describe('GET /testresources', () => {
     it('it should return a testresources message', (done) => {
       chai.request(server)
@@ -192,7 +205,7 @@ describe('Basic Tests', () => {
         });
     });
   });
-   describe('GET /testresources/2.txt', () => {
+  describe('GET /testresources/2.txt', () => {
     it('it should return a textfile with content 2', (done) => {
       chai.request(server)
         .get('/testresources/2.txt')
@@ -225,7 +238,7 @@ describe('Basic Tests', () => {
         });
     });
   });
- describe('GET /testresources/5.txt', () => {
+  describe('GET /testresources/5.txt', () => {
     it('it should return a textfile with content 5', (done) => {
       chai.request(server)
         .get('/testresources/5.txt')
