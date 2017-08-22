@@ -30,18 +30,7 @@ describe('PDF-Merge Tests', () => {
                 });
         });
     });
-    describe('GET /api/wrongprocessor/and/wait', () => {
-        it('it should return a 405 status code +  description (wrong processor)', (done) => {
-            chai.request(server)
-                .get('/api/wrongprocessor/and/wait')
-                .end((err, res) => {
-                    res.should.have.status(405);
-                    res.body.should.be.equal("No processor found. And wrong method. Sad!");
-                    done();
-                });
-        });
-    });
-
+ 
     describe('POST /api/pdfmerge/and/wait', () => {
         it('it should download and merge the given pdfs. The result should be 1,2,3', (done) => {
             let port = server.address().port;
