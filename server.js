@@ -8,12 +8,13 @@ var processors = require('./processors');
 var execSync = require('child_process').execSync;
 var execAsync = require('child_process').exec;
 var restifyBodyParser = require('restify-plugins').bodyParser;
+const debug = require('debug')('doc-processor-server')  
 
 if (extConf.customExtensions !== undefined) {
     var customExtensions = require(extConf.customExtensions);
     // console.log("custom extensions loaded from " + configuration.custom);
 } else {
-    //console.log("no custom extensions loaded");
+    debug("no custom extensions loaded");
 }
 
 var defaults = {
@@ -53,21 +54,25 @@ function respondWithHelloWorld(req, res, next) {
 
 function respondForGETProcessAndWait(req, res, next) {
     if (processors[req.params.processor] !== undefined && typeof processors[req.params.processor] === 'function') {
-        res.send(405,'Route ok. But you should POST your request.')
+        res.send(405, 'Route ok. But you should POST your request.')
         //processors[req.params.processor](conf, demoJobConfig, res, next);
         // res.send('Dr. Processor is here with processor='+req.params.processor+'but you should POST your request.');
     } else {
-        res.send(405,'No processor found. And wrong method. Sad!')
+        res.send(405, 'No processor found. And wrong method. Sad!')
     }
     next();
 }
 
 
 function respondForPOSTProcessAndWait(req, res, next) {
-    if (processors[req.params.processor] !== undefined && typeof processors[req.params.processor] === 'function') {      
-        processors[req.params.processor](conf, req.body, res, next);
+    if (processors[req.params.processor] !== undefined && typeof processors[req.params.processor] === 'function') {
+        if (req.body !== undefined && req.body.name !== undefined && req.body.files !== undefined && Array.isArray(req.body.files)) {
+            processors[req.params.processor](conf, req.body, res, next);
+        } else {
+            res.send(400, 'Your request is confusing. Please check.')
+        }
     } else {
-        res.send(404,'No processor found. Right method though.')
+        res.send(404, 'No processor found. Right method though.')
     }
     next();
 }
@@ -75,7 +80,7 @@ function respondForPOSTProcessAndWait(req, res, next) {
 var server = restify.createServer();
 //server.use(restify.acceptParser(server.acceptable));
 //server.use(restify.queryParser());
- server.use(restifyBodyParser());
+server.use(restifyBodyParser());
 
 
 server.get('/', respondWithHelloWorld);
@@ -93,8 +98,4 @@ if (process.env.NODE_ENV === 'test') {
         default: '/index.html'
     }));
 }
-
-// server.listen(server.conf.port, function () {
-//     console.log("Started in Dev-Mode")
-// });
 module.exports = server;

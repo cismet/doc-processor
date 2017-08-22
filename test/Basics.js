@@ -50,6 +50,19 @@ describe('Basic Tests', () => {
     });
   });
 
+  describe('GET /api/wrongprocessor/and/wait', () => {
+    it('it should return a 405 status code +  description (wrong processor)', (done) => {
+      chai.request(server)
+        .get('/api/wrongprocessor/and/wait')
+        .end((err, res) => {
+          res.should.have.status(405);
+          res.body.should.be.equal("No processor found. And wrong method. Sad!");
+          done();
+        });
+    });
+  });
+
+
   describe('GET /testresources', () => {
     it('it should return a testresources message', (done) => {
       chai.request(server)
@@ -178,6 +191,61 @@ describe('Basic Tests', () => {
               });
             });
           });
+        });
+    });
+  });
+  describe('GET /testresources/1.txt', () => {
+    it('it should return a textfile with content 1', (done) => {
+      chai.request(server)
+        .get('/testresources/1.txt')
+        .end((err, res) => {
+          res.should.have.status(200);
+          res.text.startsWith("1").should.be.true;
+          done();
+        });
+    });
+  });
+  describe('GET /testresources/2.txt', () => {
+    it('it should return a textfile with content 2', (done) => {
+      chai.request(server)
+        .get('/testresources/2.txt')
+        .end((err, res) => {
+          res.should.have.status(200);
+          res.text.startsWith("2").should.be.true;
+          done();
+        });
+    });
+  });
+  describe('GET /testresources/3.txt', () => {
+    it('it should return a textfile with content 3', (done) => {
+      chai.request(server)
+        .get('/testresources/3.txt')
+        .end((err, res) => {
+          res.should.have.status(200);
+          res.text.startsWith("3").should.be.true;
+          done();
+        });
+    });
+  });
+  describe('GET /testresources/4.txt', () => {
+    it('it should return a textfile with content 4', (done) => {
+      chai.request(server)
+        .get('/testresources/4.txt')
+        .end((err, res) => {
+          res.should.have.status(200);
+          res.text.startsWith("4").should.be.true;
+          done();
+        });
+    });
+  });
+  describe('GET /testresources/5.txt', () => {
+    it('it should return a textfile with content 5', (done) => {
+      chai.request(server)
+        .get('/testresources/5.txt')
+        .end((err, res) => {
+          res.should.have.status(200);
+          res.text.startsWith("5").should.be.true;
+          done();
         });
     });
   });
