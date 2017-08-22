@@ -131,7 +131,107 @@ describe('ZIP Tests', () => {
                 });
         });
     });
-
-
+    describe('POST /api/zip/and/wait with wrong conf object (wrong atttributes)', () => {
+        it('it should return status code 400 + description', (done) => {
+            let port = server.address().port;
+            let conf = {
+                "nameX": "conf02",
+                "filesX": [{
+                    "uri": "http://localhost:" + port + "/testresources/1.pdf",
+                    "folder": "a"
+                }]
+            }
+            chai.request(server)
+                .post('/api/zip/and/wait')
+                .send(conf)
+                .end((err, res) => {
+                    res.should.have.status(400);
+                    res.body.should.be.equal("Your request is confusing. Please check.");
+                    done();
+                });
+        });
+    });
+ describe('POST /api/zip/and/wait with wrong conf object (no file array)', () => {
+        it('it should return status code 400 + description', (done) => {
+            let port = server.address().port;
+            let conf = {
+                "name": "conf03",
+                "files": {
+                    "uri": "http://localhost:" + port + "/testresources/1.pdf",
+                    "folder": "a"
+                }
+            }
+            chai.request(server)
+                .post('/api/zip/and/wait')
+                .send(conf)
+                .end((err, res) => {
+                    res.should.have.status(400);
+                    res.body.should.be.equal("Your request is confusing. Please check.");
+                    done();
+                });
+        });
+    });
+    describe('POST /api/zip/and/wait with wrong conf object (no name)', () => {
+        it('it should return status code 400 + description', (done) => {
+            let port = server.address().port;
+            let conf = {
+                "files": {
+                    "uri": "http://localhost:" + port + "/testresources/1.pdf",
+                    "folder": "a"
+                }
+            }
+            chai.request(server)
+                .post('/api/zip/and/wait')
+                .send(conf)
+                .end((err, res) => {
+                    res.should.have.status(400);
+                    res.body.should.be.equal("Your request is confusing. Please check.");
+                    done();
+                });
+        });
+    });
+    describe('POST /api/zip/and/wait with non existing files in conf object', () => {
+        it('it should return status code 500 + description', (done) => {
+            let port = server.address().port;
+            let conf = {
+                "name": "conf05",
+                "files": [{
+                    "uri": "http://localhost:" + port + "/testresources/nonExisting.pdf",
+                    "folder": "a"
+                }]
+            }
+            chai.request(server)
+                .post('/api/zip/and/wait')
+                .send(conf)
+                .end((err, res) => {
+                    res.should.have.status(500);
+                    res.text.should.be.equal("At least one document could not be retrieved.");
+                    done();
+                });
+        });
+    });
+    describe('POST /api/zip/and/wait with existing and non-existing files in conf object', () => {
+        it('it should return status code 500 + description', (done) => {
+            let port = server.address().port;
+            let conf = {
+                "name": "conf06",
+                "files": [{
+                    "uri": "http://localhost:" + port + "/testresources/1.pdf",
+                    "folder": "a"
+                },{
+                    "uri": "http://localhost:" + port + "/testresources/nonExisting.pdf",
+                    "folder": "a"
+                }]
+            }
+            chai.request(server)
+                .post('/api/zip/and/wait')
+                .send(conf)
+                .end((err, res) => {
+                    res.should.have.status(500);
+                    res.text.should.be.equal("At least one document could not be retrieved.");
+                    done();
+                });
+        });
+    });
 
 });

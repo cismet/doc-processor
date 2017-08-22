@@ -32,52 +32,83 @@ exports.zip = function zip(conf, job, res, next) {
         var file = fs.createWriteStream(indir + "/" + task.folder + "/" + filename);
         if ((task.uri.startsWith("https"))) {
             var request = https.get(task.uri, function (response) {
-                response.pipe(file);
-                file.on('finish', function () {
-                    file.close();
-                    next();
-                });
+                if (response.statusCode === 200) {
+                    response.pipe(file);
+                    file.on('finish', function () {
+                        file.close();
+                        next();
+                    });
+                } else {
+                    let e = {
+                        code: 500,
+                        message: "At least one document could not be retrieved."
+                    };
+                    res.writeHead(e.code);
+                    res.end(e.message);
+                    next(e);
+                }
             });
         } else {
             var request = http.get(task.uri, function (response) {
-                response.pipe(file);
-                file.on('finish', function () {
-                    file.close();
-                    next();
-                });
+                if (response.statusCode === 200) {
+                    response.pipe(file);
+                    file.on('finish', function () {
+                        file.close();
+                        next();
+                    });
+                } else {
+                    let e = {
+                        code: 500,
+                        message: "At least one document could not be retrieved."
+                    };
+                    res.writeHead(e.code);
+                    res.end(e.message);
+                    next(e);
+                }
             });
 
         }
-    }, function () {
+    }, function (err) {
         //console.log(job.files.length + ' downloads finished');
         //Zip the results
-        var zipCmd = "zip -r -X ../out.zip *"
-        execAsync(zipCmd, {
-            "cwd": indir
-        }, function (error, stdout, stderr) {
+        if (!err) {
+            var zipCmd = "zip -r -X ../out.zip *"
+            execAsync(zipCmd, {
+                "cwd": indir
+            }, function (error, stdout, stderr) {
 
-            if (error) {
-                //console.log("ERROR");
-                //console.log(error);
-            } else {
-                //return the result
-                var filepath = __dirname + "/../tmp/job-zip-" + nonce + "/out.zip";
-                fs.readFile(filepath, function (err, data) {
-                    if (err) {
-                        res.writeHead(500);
-                        res.end(":--( : " + err);
-                        next(err);
-                        return;
-                    }
+                if (error) {
+                    let e = {
+                        code: 500,
+                        message: "Error within the zip command."
+                    };
+                    res.writeHead(e.code);
+                    res.end(e.message);
+                    next(e);
+                    //console.log(error);
+                } else {
+                    //return the result
+                    var filepath = __dirname + "/../tmp/job-zip-" + nonce + "/out.zip";
+                    fs.readFile(filepath, function (err, data) {
+                        if (err) {
+                            res.writeHead(500);
+                            res.end(":--( : " + err);
+                            next(err);
+                            return;
+                        }
 
-                    res.contentType = mime.lookup(filepath);
-                    res.writeHead(200, {
-                        "Content-Disposition": "attachment;filename=" + job.name + ".zip"
+                        res.contentType = mime.lookup(filepath);
+                        res.writeHead(200, {
+                            "Content-Disposition": "attachment;filename=" + job.name + ".zip"
+                        });
+                        res.end(data);
+                        return next();
                     });
-                    res.end(data);
-                    return next();
-                });
-            }
-        });
+                }
+            });
+        }
+        else {
+            //console.log("Zipping skipped due to an error", err);
+        }
     });
 }

@@ -82,7 +82,7 @@ exports.pdfmerge = function merge(conf, job, res, next) {
         }
     }, function (err) {
         //console.log(job.files.length + ' downloads finished');
-        //Zip the results
+        //Merge the results
         if (!err) {
             var zipCmd = "pdftk *.pdf cat output ../out.pdf"
             execAsync(zipCmd, {
