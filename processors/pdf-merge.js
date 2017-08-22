@@ -26,7 +26,7 @@ exports.pdfmerge = function merge(conf, job, res, next) {
     if (conf.speechComments) {
         execSync("say 'PDF-Verarbeitung gestartet'");
     } else {
-        console.log("pdfmerge started");
+        //console.log("pdfmerge started");
     }
 
     //Mkdirs
@@ -61,7 +61,7 @@ exports.pdfmerge = function merge(conf, job, res, next) {
             });
         }
     }, function () {
-        console.log(job.files.length + ' downloads finished');
+        //console.log(job.files.length + ' downloads finished');
         //Zip the results
         var zipCmd = "pdftk *.pdf cat output ../out.pdf"
         execAsync(zipCmd, {
