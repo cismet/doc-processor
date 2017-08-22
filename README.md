@@ -17,10 +17,9 @@ or:
 "Please download the files X,Y,Z and put them into a ZIP File"
 
 ## Prerequisites
-node, npm and a tool to zip and merge
+node, npm, zip and pdftk
 
-or docker 
-
+or docker (>=17) and docker-compose (>=1.3)
 
 ## installation with
 
@@ -37,23 +36,50 @@ npm install
 or (with docker)
 
 ```bash
-TBD
+docker pull cismet/doc-processor
+```
+
+or (build your own image with docker)
+
+```bash
+docker build -t cismet/doc-processor .
 ```
 
 ## configure
 
 ```json
-TBD
+{
+    "port": 8081,
+    "host": "0.0.0.0",
+    "workers": 10,
+    "tmpFolder": "./tmp/",
+    "keepFilesForDebugging": false,
+    "speechComments": false,
+    "processors": ["zip", "pdfmerge"]
+}```
+
 ```
+
+    "port": The port where the service is listening (ignore if you are doing docker)
+    "host": The host where the service is listening (ignore if you are doing docker)
+    "workers": The numer of parallel workers
+    "tmpFolder": The tmp folder (ignore if you are doing docker)
+    "keepFilesForDebugging": set to true if you are a keeper ;-)
+    "speechComments": if you are on a mac, set to true to hear from your app (obviously doesn't work with docker)
+```
+
 
 ## start
 ```bash
 npm start
 ```
 
-or (with docker)
+or (with docker-compose, no installation needed)
 ```bash
-TBD
+echo '{}' > localConfig.json
+mkdir servicetmp
+wget https://raw.githubusercontent.com/cismet/doc-processor/dev/docker-compose.yml
+docker-compose up -d 
 ````
 
 
