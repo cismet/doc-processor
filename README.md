@@ -58,7 +58,7 @@ TBD
 
 
 ## examples
-
+```bash 
 curl -H "Content-Type: application/json" \
 -X POST -d '{"name":"simpleMergeDemo","files":[{"uri":"https://raw.githubusercontent.com/cismet/doc-processor/dev/testresources/1.pdf","folder":"first"},{"uri":"https://raw.githubusercontent.com/cismet/doc-processor/dev/testresources/2.pdf","folder":"second"}]}' \
 http://localhost:8081/api/pdfmerge/and/wait > mergeDemo.pdf
@@ -67,6 +67,7 @@ curl -H "Content-Type: application/json" \
 -X POST -d '{"name":"simpleMergeDemo","files":[{"uri":"https://raw.githubusercontent.com/cismet/doc-processor/dev/testresources/1.pdf","folder":"first"},{"uri":"https://raw.githubusercontent.com/cismet/doc-processor/dev/testresources/2.pdf","folder":"second"}]}' \
 http://localhost:8081/api/zip/and/wait > zipDemo.zip
 
+```
 
 
 
