@@ -12,7 +12,7 @@ let binaryParser = require('./lib/Tools.js').binaryParser;
 
 chai.use(chaiHttp);
 
-describe('Merge Tests', () => {
+describe('PDF-Merge Tests', () => {
     beforeEach((done) => { //Before each test we empty the database
         //Nothing atm 
         //console.log("beforeEach ...");
@@ -43,7 +43,7 @@ describe('Merge Tests', () => {
     });
 
     describe('POST /api/pdfmerge/and/wait', () => {
-        it('it should not POST a book without pages field', (done) => {
+        it('it should download and merge the given pdfs. The result should be 1,2,3', (done) => {
             let port = server.address().port;
             let conf = {
                 "name": "conf00",
@@ -82,6 +82,59 @@ describe('Merge Tests', () => {
                                         doc.getPage(3).then(function (page) {
                                             page.getTextContent().then(function (textContent) {
                                                 textContent.items[0].str.should.be.equal("3");
+                                                done();
+                                            });
+                                        });
+
+                                    });
+                                });
+
+                            });
+                        });
+                    });
+                });
+        });
+    });
+    describe('POST /api/pdfmerge/and/wait', () => {
+        it('it should download and merge the given pdfs. The result should be 3,2,1', (done) => {
+            let port = server.address().port;
+            let conf = {
+                "name": "conf01",
+                "files": [{
+                        "uri": "http://localhost:" + port + "/testresources/3.pdf",
+                        "folder": "a"
+                    },
+                    {
+                        "uri": "http://localhost:" + port + "/testresources/2.pdf",
+                        "folder": "b"
+                    },
+                    {
+                        "uri": "http://localhost:" + port + "/testresources/1.pdf",
+                        "folder": "z"
+                    },
+                ]
+            }
+            chai.request(server)
+                .post('/api/pdfmerge/and/wait')
+                .send(conf)
+                .buffer()
+                .parse(binaryParser)
+                .end((err, res) => {
+                    res.should.have.status(200);
+                    pdfjsLib.getDocument({
+                        data: res.body
+                    }).then(function (doc) {
+                        var numPages = doc.numPages;
+                        doc.numPages.should.be.equal(3);
+                        doc.getPage(1).then(function (page) {
+                            page.getTextContent().then(function (textContent) {
+                                textContent.items[0].str.should.be.equal("3");
+                                doc.getPage(2).then(function (page) {
+                                    page.getTextContent().then(function (textContent) {
+                                        textContent.items[0].str.should.be.equal("2");
+                                        doc.getPage(3).then(function (page) {
+                                            page.getTextContent().then(function (textContent) {
+                                                textContent.items[0].str.should.be.equal("1");
                                                 done();
                                             });
                                         });
