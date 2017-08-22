@@ -52,9 +52,13 @@ exports.pdfmerge = function merge(conf, job, res, next) {
                         next();
                     });
                 } else {
-                    res.writeHead(500);
-                    res.end("At least one document could not be retrieved.");
-                    next({code:500, message:"At least one document could not be retrieved."});
+                    let e = {
+                        code: 500,
+                        message: "At least one document could not be retrieved."
+                    };
+                    res.writeHead(e.code);
+                    res.end(e.message);
+                    next(e);
                 }
             });
         } else {
@@ -66,9 +70,13 @@ exports.pdfmerge = function merge(conf, job, res, next) {
                         next();
                     });
                 } else {
-                    res.writeHead(500);
-                    res.end("At least one document could not be retrieved.");
-                    next({code:500, message:"At least one document could not be retrieved."});
+                    let e = {
+                        code: 500,
+                        message: "At least one document could not be retrieved."
+                    };
+                    res.writeHead(e.code);
+                    res.end(e.message);
+                    next(e);
                 }
             });
         }
@@ -82,16 +90,26 @@ exports.pdfmerge = function merge(conf, job, res, next) {
             }, function (error, stdout, stderr) {
 
                 if (error) {
-                    console.log("ERROR");
-                    console.log(error);
+                    let e = {
+                        code: 500,
+                        message: "Error within the merge command."
+                    };
+                    res.writeHead(e.code);
+                    res.end(e.message);
+                    next(e);
+                    // console.log(error);
                 } else {
                     //return the result
                     var filepath = jobdir + "/out.pdf";
                     fs.readFile(filepath, function (err, data) {
                         if (err) {
-                            res.writeHead(500);
-                            res.end(":--( : " + err);
-                            next(err);
+                            let e = {
+                                code: 500,
+                                message: "Could not find the output file."
+                            };
+                            res.writeHead(e.code);
+                            res.end(e.message);
+                            next(e);
                             return;
                         }
 
@@ -104,8 +122,7 @@ exports.pdfmerge = function merge(conf, job, res, next) {
                     });
                 }
             });
-        }
-        else {
+        } else {
             //console.log("Merging skipped due to an error", err);
         }
     });

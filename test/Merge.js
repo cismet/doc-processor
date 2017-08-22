@@ -316,4 +316,29 @@ describe('PDF-Merge Tests', () => {
         });
     });
 
+describe('POST /api/pdfmerge/and/wait with existing files but wrong types in conf object', () => {
+        it('it should return status code 500 + description', (done) => {
+            let port = server.address().port;
+            let conf = {
+                "name": "conf08",
+                "files": [{
+                    "uri": "http://localhost:" + port + "/testresources/1.txt",
+                    "folder": "a"
+                },{
+                    "uri": "http://localhost:" + port + "/testresources/2.txt",
+                    "folder": "a"
+                }]
+            }
+            chai.request(server)
+                .post('/api/pdfmerge/and/wait')
+                .send(conf)
+                .end((err, res) => {
+                    res.should.have.status(500);
+                    res.text.should.be.equal("Error within the merge command.");
+                    done();
+                });
+        });
+    });
+
+
 });
