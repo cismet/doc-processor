@@ -1,0 +1,29 @@
+{
+  "name": "doc-processor",
+  "version": "0.0.1",
+  "description": "Small service to merge or zip existing pdfs ",
+  "main": "server.js",
+  "scripts": {
+    "test": "node_modules/.bin/mocha",
+    "start": "node start.js"
+  },
+  "author": "Thorsten Hell <th@cismet.de> (https://www.cismet.de)",
+  "license": "MIT",
+  "dependencies": {
+    "async": "^2.5.0",
+    "child_process": "^1.0.2",
+    "clustered-node": "0.0.9",
+    "fs": "0.0.1-security",
+    "mt-files-downloader": "^0.2.5",
+    "numeral": "^2.0.6",
+    "path": "^0.12.7",
+    "restify": "^5.1.0",
+    "restify-plugins": "^1.6.0"
+  },
+  "devDependencies": {
+    "chai": "^4.1.1",
+    "chai-http": "^3.0.0",
+    "mocha": "^3.5.0",
+    "pdfjs-dist": "^1.9.448"
+  }
+}
