@@ -45,51 +45,68 @@ exports.pdfmerge = function merge(conf, job, res, next) {
         var file = fs.createWriteStream(indir + "/" + prefix + "-" + task.folder + "-" + filename);
         if ((task.uri.startsWith("https"))) {
             var request = https.get(task.uri, function (response) {
-                response.pipe(file);
-                file.on('finish', function () {
-                    file.close();
-                    next();
-                });
+                if (response.statusCode === 200) {
+                    response.pipe(file);
+                    file.on('finish', function () {
+                        file.close();
+                        next();
+                    });
+                } else {
+                    res.writeHead(500);
+                    res.end("At least one document could not be retrieved.");
+                    next({code:500, message:"At least one document could not be retrieved."});
+                }
             });
         } else {
             var request = http.get(task.uri, function (response) {
-                response.pipe(file);
-                file.on('finish', function () {
-                    file.close();
-                    next();
-                });
+                if (response.statusCode === 200) {
+                    response.pipe(file);
+                    file.on('finish', function () {
+                        file.close();
+                        next();
+                    });
+                } else {
+                    res.writeHead(500);
+                    res.end("At least one document could not be retrieved.");
+                    next({code:500, message:"At least one document could not be retrieved."});
+                }
             });
         }
-    }, function () {
+    }, function (err) {
         //console.log(job.files.length + ' downloads finished');
         //Zip the results
-        var zipCmd = "pdftk *.pdf cat output ../out.pdf"
-        execAsync(zipCmd, {
-            "cwd": indir
-        }, function (error, stdout, stderr) {
+        if (!err) {
+            var zipCmd = "pdftk *.pdf cat output ../out.pdf"
+            execAsync(zipCmd, {
+                "cwd": indir
+            }, function (error, stdout, stderr) {
 
-            if (error) {
-                console.log("ERROR");
-                console.log(error);
-            } else {
-                //return the result
-                var filepath = jobdir + "/out.pdf";
-                fs.readFile(filepath, function (err, data) {
-                    if (err) {
-                        res.writeHead(500);
-                        res.end(":--( : " + err);
-                        next(err);
-                        return;
-                    }
+                if (error) {
+                    console.log("ERROR");
+                    console.log(error);
+                } else {
+                    //return the result
+                    var filepath = jobdir + "/out.pdf";
+                    fs.readFile(filepath, function (err, data) {
+                        if (err) {
+                            res.writeHead(500);
+                            res.end(":--( : " + err);
+                            next(err);
+                            return;
+                        }
 
-                    res.contentType = mime.lookup(filepath);
-                    res.writeHead(200, {
-                        "Content-Disposition": "attachment;filename=" + job.name + ".pdf"
+                        res.contentType = mime.lookup(filepath);
+                        res.writeHead(200, {
+                            "Content-Disposition": "attachment;filename=" + job.name + ".pdf"
+                        });
+                        res.end(data);
+                        return next();
                     });
-                    res.end(data);
-                    return next();
-                });
-            }
-        });
+                }
+            });
+        }
+        else {
+            //console.log("Merging skipped due to an error", err);
+        }
     });
 }

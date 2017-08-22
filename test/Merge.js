@@ -83,14 +83,26 @@ describe('PDF-Merge Tests', () => {
                                             page.getTextContent().then(function (textContent) {
                                                 textContent.items[0].str.should.be.equal("3");
                                                 done();
+                                            }).catch((error) => {
+                                                done(error);
                                             });
+                                        }).catch((error) => {
+                                            done(error);
                                         });
-
+                                    }).catch((error) => {
+                                        done(error);
                                     });
+                                }).catch((error) => {
+                                    done(error);
                                 });
-
+                            }).catch((error) => {
+                                done(error);
                             });
+                        }).catch((error) => {
+                            done(error);
                         });
+                    }).catch((error) => {
+                        done(error);
                     });
                 });
         });
@@ -136,20 +148,172 @@ describe('PDF-Merge Tests', () => {
                                             page.getTextContent().then(function (textContent) {
                                                 textContent.items[0].str.should.be.equal("1");
                                                 done();
+                                            }).catch((error) => {
+                                                done(error);
                                             });
+                                        }).catch((error) => {
+                                            done(error);
                                         });
-
+                                    }).catch((error) => {
+                                        done(error);
                                     });
+                                }).catch((error) => {
+                                    done(error);
                                 });
-
+                            }).catch((error) => {
+                                done(error);
                             });
+                        }).catch((error) => {
+                            done(error);
                         });
+                    }).catch((error) => {
+                        done(error);
                     });
                 });
         });
     });
 
+    describe('POST /api/pdfmerge/and/wait', () => {
+        it('it should download and merge the given pdfs. The result should contain only 1', (done) => {
+            let port = server.address().port;
+            let conf = {
+                "name": "conf02",
+                "files": [{
+                    "uri": "http://localhost:" + port + "/testresources/1.pdf",
+                    "folder": "a"
+                }]
+            }
+            chai.request(server)
+                .post('/api/pdfmerge/and/wait')
+                .send(conf)
+                .buffer()
+                .parse(binaryParser)
+                .end((err, res) => {
+                    res.should.have.status(200);
+                    pdfjsLib.getDocument({
+                        data: res.body
+                    }).then(function (doc) {
+                        var numPages = doc.numPages;
+                        doc.numPages.should.be.equal(1);
+                        doc.getPage(1).then(function (page) {
+                            page.getTextContent().then(function (textContent) {
+                                textContent.items[0].str.should.be.equal("1");
+                                done();
+                            }).catch((error) => {
+                                done(error);
+                            });
+                        }).catch((error) => {
+                            done(error);
+                        });
+                    }).catch((error) => {
+                        done(error);
+                    });
+                });
+        });
+    });
 
+    describe('POST /api/pdfmerge/and/wait with wrong conf object (wrong atttributes)', () => {
+        it('it should return status code 400 + description', (done) => {
+            let port = server.address().port;
+            let conf = {
+                "nameX": "conf03",
+                "filesX": [{
+                    "uri": "http://localhost:" + port + "/testresources/1.pdf",
+                    "folder": "a"
+                }]
+            }
+            chai.request(server)
+                .post('/api/pdfmerge/and/wait')
+                .send(conf)
+                .end((err, res) => {
+                    res.should.have.status(400);
+                    res.body.should.be.equal("Your request is confusing. Please check.");
+                    done();
+                });
+        });
+    });
 
+    describe('POST /api/pdfmerge/and/wait with wrong conf object (no file array)', () => {
+        it('it should return status code 400 + description', (done) => {
+            let port = server.address().port;
+            let conf = {
+                "name": "conf04",
+                "files": {
+                    "uri": "http://localhost:" + port + "/testresources/1.pdf",
+                    "folder": "a"
+                }
+            }
+            chai.request(server)
+                .post('/api/pdfmerge/and/wait')
+                .send(conf)
+                .end((err, res) => {
+                    res.should.have.status(400);
+                    res.body.should.be.equal("Your request is confusing. Please check.");
+                    done();
+                });
+        });
+    });
+    describe('POST /api/pdfmerge/and/wait with wrong conf object (no name)', () => {
+        it('it should return status code 400 + description', (done) => {
+            let port = server.address().port;
+            let conf = {
+                "files": {
+                    "uri": "http://localhost:" + port + "/testresources/1.pdf",
+                    "folder": "a"
+                }
+            }
+            chai.request(server)
+                .post('/api/pdfmerge/and/wait')
+                .send(conf)
+                .end((err, res) => {
+                    res.should.have.status(400);
+                    res.body.should.be.equal("Your request is confusing. Please check.");
+                    done();
+                });
+        });
+    });
+    describe('POST /api/pdfmerge/and/wait with non existing files in conf object', () => {
+        it('it should return status code 500 + description', (done) => {
+            let port = server.address().port;
+            let conf = {
+                "name": "conf06",
+                "files": [{
+                    "uri": "http://localhost:" + port + "/testresources/nonExisting.pdf",
+                    "folder": "a"
+                }]
+            }
+            chai.request(server)
+                .post('/api/pdfmerge/and/wait')
+                .send(conf)
+                .end((err, res) => {
+                    res.should.have.status(500);
+                    res.text.should.be.equal("At least one document could not be retrieved.");
+                    done();
+                });
+        });
+    });
+    describe('POST /api/pdfmerge/and/wait with existing and non-existing files in conf object', () => {
+        it('it should return status code 500 + description', (done) => {
+            let port = server.address().port;
+            let conf = {
+                "name": "conf07",
+                "files": [{
+                    "uri": "http://localhost:" + port + "/testresources/1.pdf",
+                    "folder": "a"
+                },{
+                    "uri": "http://localhost:" + port + "/testresources/nonExisting.pdf",
+                    "folder": "a"
+                }]
+            }
+            chai.request(server)
+                .post('/api/pdfmerge/and/wait')
+                .send(conf)
+                .end((err, res) => {
+                    res.should.have.status(500);
+                    res.text.should.be.equal("At least one document could not be retrieved.");
+                    done();
+                });
+        });
+    });
 
 });
