@@ -2,7 +2,7 @@ version: '2'
 
 services:
 
-  verdis-rest:
+  doc-processor:
     container_name: doc-processor.cismet.de
     image: cismet/doc-processor:latest
     restart: always
