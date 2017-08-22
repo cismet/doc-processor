@@ -1,5 +1,7 @@
 'use strict';
+const debug = require('debug')('doc-processor-server')  
+
 var server = require('./server');
 server.listen(server.conf.port, function() {
-    console.log("Started in Dev-Mode")
+    debug("doc-processor started in dev-mode")
 });

@@ -1,12 +1,13 @@
 var execSync = require('child_process').execSync;
 var execAsync = require('child_process').exec;
 var numeral = require('numeral');
+const debug = require('debug')('doc-processor-server')  
 
 exports.pdfmerge = function merge(conf, job, res, next) {
     if (conf.speechComments) {
         execSync("say 'PDF-Verarbeitung gestartet'");
     } else {
-        console.log("pdfmerge started");
+        debug("pdfmerge started");
     }
 
 };
@@ -26,7 +27,7 @@ exports.pdfmerge = function merge(conf, job, res, next) {
     if (conf.speechComments) {
         execSync("say 'PDF-Verarbeitung gestartet'");
     } else {
-        //console.log("pdfmerge started");
+        debug("pdfmerge started");
     }
 
     //Mkdirs
@@ -81,7 +82,7 @@ exports.pdfmerge = function merge(conf, job, res, next) {
             });
         }
     }, function (err) {
-        //console.log(job.files.length + ' downloads finished');
+        debug(job.files.length + ' downloads finished');
         //Merge the results
         if (!err) {
             var zipCmd = "pdftk *.pdf cat output ../out.pdf"
@@ -97,7 +98,7 @@ exports.pdfmerge = function merge(conf, job, res, next) {
                     res.writeHead(e.code);
                     res.end(e.message);
                     next(e);
-                    // console.log(error);
+                    debug(error);
                 } else {
                     //return the result
                     var filepath = jobdir + "/out.pdf";
@@ -123,7 +124,7 @@ exports.pdfmerge = function merge(conf, job, res, next) {
                 }
             });
         } else {
-            //console.log("Merging skipped due to an error", err);
+            debug("Merging skipped due to an error", err);
         }
     });
 }

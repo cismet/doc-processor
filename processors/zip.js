@@ -6,6 +6,7 @@ var async = require('async');
 var http = require('http');
 var https = require('https');
 var path = require('path');
+const debug = require('debug')('doc-processor-server')  
 
 exports.zip = function zip(conf, job, res, next) {
     var nonce = job.name + "-" + Math.floor(Math.random() * 10000000);
@@ -13,7 +14,7 @@ exports.zip = function zip(conf, job, res, next) {
     if (conf.speechComments) {
         execSync("say 'ZIP-Verarbeitung gestartet'");
     } else {
-        //console.log("zip process started");
+        debug("zip process started");
     }
 
     //Mkdirs
@@ -69,7 +70,7 @@ exports.zip = function zip(conf, job, res, next) {
 
         }
     }, function (err) {
-        //console.log(job.files.length + ' downloads finished');
+        debug(job.files.length + ' downloads finished');
         //Zip the results
         if (!err) {
             var zipCmd = "zip -r -X ../out.zip *"
@@ -85,7 +86,7 @@ exports.zip = function zip(conf, job, res, next) {
                     res.writeHead(e.code);
                     res.end(e.message);
                     next(e);
-                    //console.log(error);
+                   debug(error);
                 } else {
                     //return the result
                     var filepath = __dirname + "/../tmp/job-zip-" + nonce + "/out.zip";
@@ -108,7 +109,7 @@ exports.zip = function zip(conf, job, res, next) {
             });
         }
         else {
-            //console.log("Zipping skipped due to an error", err);
+            debug("Zipping skipped due to an error", err);
         }
     });
 }

@@ -8,12 +8,13 @@ var processors = require('./processors');
 var execSync = require('child_process').execSync;
 var execAsync = require('child_process').exec;
 var restifyBodyParser = require('restify-plugins').bodyParser;
+const debug = require('debug')('doc-processor-server')  
 
 if (extConf.customExtensions !== undefined) {
     var customExtensions = require(extConf.customExtensions);
     // console.log("custom extensions loaded from " + configuration.custom);
 } else {
-    //console.log("no custom extensions loaded");
+    debug("no custom extensions loaded");
 }
 
 var defaults = {
@@ -97,8 +98,4 @@ if (process.env.NODE_ENV === 'test') {
         default: '/index.html'
     }));
 }
-
-// server.listen(server.conf.port, function () {
-//     console.log("Started in Dev-Mode")
-// });
 module.exports = server;
