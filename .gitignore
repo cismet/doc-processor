@@ -60,3 +60,4 @@ typings/
 # tmp folder
 tmp
 servicetmp
+localconfig.json
