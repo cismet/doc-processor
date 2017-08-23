@@ -23,7 +23,7 @@ describe('Basic Tests', () => {
         .get('/api')
         .end((err, res) => {
           res.should.have.status(200);
-          res.body.should.be.equal("Dr. Processor is here with it's API");
+          /.*Dr. Processor is here with it's API.*/.test(res.text).should.be.true;
           done();
         });
     });
@@ -34,7 +34,7 @@ describe('Basic Tests', () => {
         .get('/api')
         .end((err, res) => {
           res.should.have.status(200);
-          res.body.should.be.equal("Dr. Processor is here with it's API");
+          /.*Dr. Processor is here with it's API.*/.test(res.text).should.be.true;
           done();
         });
     });
