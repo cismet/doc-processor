@@ -53,6 +53,13 @@ or (build your own image with docker)
 docker build -t cismet/doc-processor .
 ```
 
+## check
+Now it should look like this:
+
+
+![dr processor hello world](https://user-images.githubusercontent.com/837211/29609790-807f3eb2-87f8-11e7-98ef-cb819c917236.png)
+
+
 ## configure
 
 ```json
