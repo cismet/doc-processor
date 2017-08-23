@@ -56,7 +56,7 @@ exports.zip = function zip(conf, job, res, next) {
                     next(e);
                 }
             });
-        } else {
+        } else { 
             var request = http.get(url, function (response) {
                 if (response.statusCode === 200) {
                     response.pipe(file);

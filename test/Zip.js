@@ -151,7 +151,7 @@ describe('ZIP Tests', () => {
                 });
         });
     });
- describe('POST /api/zip/and/wait with wrong conf object (no file array)', () => {
+    describe('POST /api/zip/and/wait with wrong conf object (no file array)', () => {
         it('it should return status code 400 + description', (done) => {
             let port = server.address().port;
             let conf = {
@@ -218,7 +218,7 @@ describe('ZIP Tests', () => {
                 "files": [{
                     "uri": "http://localhost:" + port + "/testresources/1.pdf",
                     "folder": "a"
-                },{
+                }, {
                     "uri": "http://localhost:" + port + "/testresources/nonExisting.pdf",
                     "folder": "a"
                 }]
@@ -229,6 +229,73 @@ describe('ZIP Tests', () => {
                 .end((err, res) => {
                     res.should.have.status(500);
                     res.text.should.be.equal("At least one document could not be retrieved.");
+                    done();
+                });
+        });
+    });
+    describe('POST /api/zip/and/wait with only prohibited files in conf object', () => {
+        it('it should return status code 403 + description', (done) => {
+            let port = server.address().port;
+            let conf = {
+                "name": "conf07",
+                "files": [{
+                    "uri": "http://127.0.0.1:" + port + "/testresources/1.pdf",
+                    "folder": "a"
+                }]
+            }
+            server.conf.targetWhitelist = "^(http|https):\\/\\/localhost:\\d*\\/.*"
+            chai.request(server)
+                .post('/api/zip/and/wait')
+                .send(conf)
+                .end((err, res) => {
+                    res.should.have.status(403);
+                    res.body.should.be.equal('Forbidden. No Download for you. -.-');
+                    done();
+                });
+        });
+    });
+    describe('POST /api/zip/and/wait with existing files but also prohibited files in conf object', () => {
+        it('it should return status code 403 + description', (done) => {
+            let port = server.address().port;
+            let conf = {
+                "name": "conf08",
+                "files": [{
+                    "uri": "http://localhost:" + port + "/testresources/1.pdf",
+                    "folder": "a"
+                }, {
+                    "uri": "http://127.0.0.1:" + port + "/testresources/2.pdf",
+                    "folder": "a"
+                }]
+            }
+            server.conf.targetWhitelist = "^(http|https):\\/\\/localhost:\\d*\\/.*"
+            chai.request(server)
+                .post('/api/zip/and/wait')
+                .send(conf)
+                .end((err, res) => {
+                    res.should.have.status(403);
+                    res.body.should.be.equal('Forbidden. No Download for you. -.-');
+                    done();
+                });
+        });
+    });
+
+   describe('POST /api/zip/and/wait with only prohibited files in conf object and disabled the whitelisting again', () => {
+        it('it should return status code 200', (done) => {
+            let port = server.address().port;
+            let conf = {
+                "name": "conf09",
+                "files": [{
+                    "uri": "http://127.0.0.1:" + port + "/testresources/1.pdf",
+                    "folder": "a"
+                }]
+            }
+            let wlBackup = server.conf.targetWhitelist;
+            server.conf.targetWhitelist = '';
+            chai.request(server)
+                .post('/api/zip/and/wait')
+                .send(conf)
+                .end((err, res) => {
+                    res.should.have.status(200);
                     done();
                 });
         });
