@@ -1,6 +1,8 @@
 var execSync = require('child_process').execSync;
 var execAsync = require('child_process').exec;
 var numeral = require('numeral');
+var urlencode = require('urlencode');
+
 const debug = require('debug')('doc-processor-server')
 
 exports.pdfmerge = function merge(conf, job, res, next) {
@@ -43,9 +45,13 @@ exports.pdfmerge = function merge(conf, job, res, next) {
         var prefix = numeral(i).format('000');
         i++;
         var filename = path.basename(task.uri);
+        var urlencodedFilename=urlencode(path.basename(task.uri));
+        var urlprefix=path.dirname(task.uri);
+        var url=urlprefix+"/"+urlencodedFilename;
+        debug("go for "+url);
         var file = fs.createWriteStream(indir + "/" + prefix + "-" + task.folder + "-" + filename);
         if ((task.uri.startsWith("https"))) {
-            var request = https.get(task.uri, function (response) {
+            var request = https.get(url, function (response) {
                 if (response.statusCode === 200) {
                     response.pipe(file);
                     file.on('finish', function () {
@@ -63,7 +69,7 @@ exports.pdfmerge = function merge(conf, job, res, next) {
                 }
             });
         } else {
-            var request = http.get(task.uri, function (response) {
+            var request = http.get(url, function (response) {
                 if (response.statusCode === 200) {
                     response.pipe(file);
                     file.on('finish', function () {

@@ -6,6 +6,7 @@ var async = require('async');
 var http = require('http');
 var https = require('https');
 var path = require('path');
+var urlencode = require('urlencode');
 const debug = require('debug')('doc-processor-server')
 
 exports.zip = function zip(conf, job, res, next) {
@@ -30,9 +31,13 @@ exports.zip = function zip(conf, job, res, next) {
             fs.mkdirSync(indir + "/" + task.folder);
         }
         var filename = path.basename(task.uri);
+        var urlencodedFilename=urlencode(path.basename(task.uri));
+        var urlprefix=path.dirname(task.uri);
+        var url=urlprefix+"/"+urlencodedFilename;
         var file = fs.createWriteStream(indir + "/" + task.folder + "/" + filename);
+        debug("go for "+url);
         if ((task.uri.startsWith("https"))) {
-            var request = https.get(task.uri, function (response) {
+            var request = https.get(url, function (response) {
                 if (response.statusCode === 200) {
                     response.pipe(file);
                     file.on('finish', function () {
@@ -43,14 +48,16 @@ exports.zip = function zip(conf, job, res, next) {
                     let e = {
                         code: 500,
                         message: "At least one document could not be retrieved."
+
                     };
+                    debug(response)
                     res.writeHead(e.code);
                     res.end(e.message);
                     next(e);
                 }
             });
         } else {
-            var request = http.get(task.uri, function (response) {
+            var request = http.get(url, function (response) {
                 if (response.statusCode === 200) {
                     response.pipe(file);
                     file.on('finish', function () {
