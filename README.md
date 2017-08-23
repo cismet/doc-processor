@@ -2,6 +2,7 @@
 
 ![dr. processor icon](https://user-images.githubusercontent.com/837211/29552552-25ad0ec8-8718-11e7-8020-b1d85c12c872.png)
 
+![docker status](https://img.shields.io/docker/build/cismet/doc-processor.svg)
 
 Once in a while there is a need for a tiny service that collect downloads and process them the way you want to. (ZIP and PDF-merge in a first step).
 
@@ -85,7 +86,15 @@ npm start
 or (with docker-compose)
 ```bash
 docker-compose up -d 
+```
+## update with docker-compose
+
+```bash
+docker pull cismet/doc-processor
+docker-compose down && docker-compose up -d 
 ````
+
+
 
 
 ## examples
