@@ -39,6 +39,13 @@ or (with docker)
 docker pull cismet/doc-processor
 ```
 
+or (with docker-compose)
+```bash
+echo '{}' > localConfig.json
+mkdir servicetmp
+wget https://raw.githubusercontent.com/cismet/doc-processor/dev/docker-compose.yml
+```
+
 or (build your own image with docker)
 
 ```bash
@@ -77,9 +84,6 @@ npm start
 
 or (with docker-compose, no installation needed)
 ```bash
-echo '{}' > localConfig.json
-mkdir servicetmp
-wget https://raw.githubusercontent.com/cismet/doc-processor/dev/docker-compose.yml
 docker-compose up -d 
 ````
 
