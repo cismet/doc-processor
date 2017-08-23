@@ -82,7 +82,7 @@ docker build -t cismet/doc-processor .
 npm start
 ```
 
-or (with docker-compose, no installation needed)
+or (with docker-compose)
 ```bash
 docker-compose up -d 
 ````
