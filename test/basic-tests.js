@@ -7,7 +7,7 @@ let chaiHttp = require('chai-http');
 let server = require('../server');
 let should = chai.should();
 let pdfjsLib = require('pdfjs-dist');
-let binaryParser = require('./lib/Tools.js').binaryParser;
+let binaryParser = require('./lib/test-tools.js').binaryParser;
 chai.use(chaiHttp);
 
 describe('Basic Tests', () => {
@@ -50,10 +50,10 @@ describe('Basic Tests', () => {
     });
   });
 
-  describe('GET /api/wrongprocessor/and/wait', () => {
+  describe('GET /api/wrongprocessor/and/wait/for/download', () => {
     it('it should return a 405 status code +  description (wrong processor)', (done) => {
       chai.request(server)
-        .get('/api/wrongprocessor/and/wait')
+        .get('/api/wrongprocessor/and/wait/for/download')
         .end((err, res) => {
           res.should.have.status(405);
           res.body.should.be.equal("No processor found. And wrong method. Sad!");

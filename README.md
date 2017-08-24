@@ -62,7 +62,6 @@ docker build -t cismet/doc-processor .
     "workers": 10,
     "tmpFolder": "./tmp/",
     "keepFilesForDebugging": false,
-    "speechComments": false,
     "processors": ["zip", "pdfmerge"],
     "targetWhitelist": ""
 }
@@ -75,7 +74,6 @@ docker build -t cismet/doc-processor .
     "workers": The numer of parallel workers
     "tmpFolder": The tmp folder (ignore if you are doing docker)
     "keepFilesForDebugging": set to true if you are a keeper ;-)
-    "speechComments": if you are on a mac, set to true to hear from your app (obviously doesn't work with docker)
     "targetWhitelist": a regex to match all allowed download locations. all downloads allowed if empty. Example: "^(http|https):\\/\\/localhost:\\d*\\/.*"
 ```
 

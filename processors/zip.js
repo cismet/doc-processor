@@ -2,24 +2,25 @@ var execSync = require('child_process').execSync;
 var execAsync = require('child_process').exec;
 var fs = require('fs');
 var mime = require('mime');
+var md5 = require('js-md5');
 var async = require('async');
 var http = require('http');
 var https = require('https');
 var path = require('path');
 var urlencode = require('urlencode');
 const debug = require('debug')('doc-processor-server')
+let downloadHelper = require('./lib/tools.js').downloadHelper;
 
-exports.zip = function zip(conf, job, res, next) {
-    var nonce = job.name + "-" + Math.floor(Math.random() * 10000000);
-    //var nonce = "1337";
-    if (conf.speechComments) {
-        execSync("say 'ZIP-Verarbeitung gestartet'");
-    } else {
-        debug("zip process started");
-    }
-
+exports.download = function download(hash, dlname, conf, res, next) {
+    downloadHelper("zip", "zip", hash, dlname, conf, res, next);
+}
+exports.zip = function zip(result, conf, job, res, next) {
+    debug("zip process started");
+    let rnd = Math.floor(Math.random() * 1000)
+    let hash = md5(JSON.stringify(job));
+    let nonce = hash + "-" + rnd
     //Mkdirs
-    var jobdir = conf.tmpFolder + "/job-zip-" + nonce;
+    let jobdir = conf.tmpFolder + "/job-zip-" + nonce;
     var indir = jobdir + "/in"
     fs.mkdirSync(jobdir);
     fs.mkdirSync(indir);
@@ -31,11 +32,11 @@ exports.zip = function zip(conf, job, res, next) {
             fs.mkdirSync(indir + "/" + task.folder);
         }
         var filename = path.basename(task.uri);
-        var urlencodedFilename=urlencode(path.basename(task.uri));
-        var urlprefix=path.dirname(task.uri);
-        var url=urlprefix+"/"+urlencodedFilename;
+        var urlencodedFilename = urlencode(path.basename(task.uri));
+        var urlprefix = path.dirname(task.uri);
+        var url = urlprefix + "/" + urlencodedFilename;
         var file = fs.createWriteStream(indir + "/" + task.folder + "/" + filename);
-        debug("go for "+url);
+        debug("go for " + url);
         if ((task.uri.startsWith("https"))) {
             var request = https.get(url, function (response) {
                 if (response.statusCode === 200) {
@@ -50,13 +51,17 @@ exports.zip = function zip(conf, job, res, next) {
                         message: "At least one document could not be retrieved."
 
                     };
+                    if (conf.deleteFilesEvenOnErrors) {
+                        debug("remove " + jobdir);
+                        execSync("rm -rf  " + jobdir);
+                    }
                     debug(response)
                     res.writeHead(e.code);
                     res.end(e.message);
                     next(e);
                 }
             });
-        } else { 
+        } else {
             var request = http.get(url, function (response) {
                 if (response.statusCode === 200) {
                     response.pipe(file);
@@ -80,8 +85,8 @@ exports.zip = function zip(conf, job, res, next) {
         debug(job.files.length + ' downloads finished');
         //Zip the results
         if (!err) {
-            var zipCmd = "zip -r -X ../out.zip *"
-            execAsync(zipCmd, {
+            var cmd = "zip -r -X ../out.zip *"
+            execAsync(cmd, {
                 "cwd": indir
             }, function (error, stdout, stderr) {
 
@@ -90,6 +95,10 @@ exports.zip = function zip(conf, job, res, next) {
                         code: 500,
                         message: "Error within the zip command."
                     };
+                    if (conf.deleteFilesEvenOnErrors) {
+                        debug("remove " + jobdir);
+                        execSync("rm -rf  " + jobdir);
+                    }
                     res.writeHead(e.code);
                     res.end(e.message);
                     next(e);
@@ -99,26 +108,55 @@ exports.zip = function zip(conf, job, res, next) {
                     var filepath = jobdir + "/out.zip";
                     fs.readFile(filepath, function (err, data) {
                         if (err) {
-                            res.writeHead(500);
-                            res.end(":--( : " + err);
-                            next(err);
+                            if (conf.deleteFilesEvenOnErrors) {
+                                debug("remove " + jobdir);
+                                execSync("rm -rf  " + jobdir);
+                            }
+                            let e = {
+                                code: 500,
+                                message: "Could not find the output file."
+                            };
+                            res.writeHead(e.code);
+                            res.end(e.message);
+                            next(e);
                             return;
                         }
-
-                        res.contentType = mime.lookup(filepath);
-                        res.writeHead(200, {
-                            "Content-Disposition": "attachment;filename=" + job.name + ".zip"
-                        });
-                        res.end(data);
-                        if (!conf.keepFilesForDebugging) {
-                            debug("remove " + jobdir);
-                            execSync("rm -rf  " + jobdir);
+                        if (result === 'DOWNLOAD') {
+                            res.contentType = mime.lookup(filepath);
+                            res.writeHead(200, {
+                                "Content-Disposition": "attachment;filename=" + job.name + ".zip"
+                            });
+                            res.end(data);
+                            if (!conf.keepFilesForDebugging) {
+                                debug("remove " + jobdir);
+                                execSync("rm -rf  " + jobdir);
+                            }
+                            return next();
+                        } else if (result === 'STATUS') {
+                            res.contentType = 'application/json'
+                            //res.writeHead(200);
+                            res.send(200, {
+                                status: 200,
+                                id: nonce
+                            });
+                            return next();
+                        } else {
+                            throw {
+                                error: "result has to be either DOWNLOAD or STATUS (it was " + result + ")"
+                            };
+                            return next();
                         }
-                        return next();
+
+
                     });
+
                 }
             });
         } else {
+            if (conf.deleteFilesEvenOnErrors) {
+                debug("remove " + jobdir);
+                execSync("rm -rf  " + jobdir);
+            }
             debug("Zipping skipped due to an error", err);
         }
     });

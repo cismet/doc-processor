@@ -9,6 +9,8 @@ var execSync = require('child_process').execSync;
 var execAsync = require('child_process').exec;
 var restifyBodyParser = require('restify-plugins').bodyParser;
 const debug = require('debug')('doc-processor-server')
+let STATUS = 'STATUS';
+let DOWNLOAD = 'DOWNLOAD';
 
 if (extConf.customExtensions !== undefined) {
     var customExtensions = require(extConf.customExtensions);
@@ -23,7 +25,7 @@ var defaults = {
     "workers": 10,
     "tmpFolder": "./tmp",
     "keepFilesForDebugging": false,
-    "speechComments": false,
+    "deleteFilesEvenOnErrors": false,
     "processors": ["zip", "pdfmerge"],
     "targetWhitelist": ""
 };
@@ -34,9 +36,8 @@ var conf = {
     "workers": extConf.workers || defaults.workers,
     "tmpFolder": extConf.tmpFolder || defaults.tmpFolder,
     "keepFilesForDebugging": extConf.keepFilesForDebugging || defaults.keepFilesForDebugging,
-    "speechComments": extConf.speechComments || defaults.speechComments,
     "targetWhitelist": extConf.targetWhitelist || defaults.targetWhitelist,
-
+    "deleteFilesEvenOnErrors": extConf.deleteFilesEvenOnErrors || defaults.deleteFilesEvenOnErrors,
 };
 
 if (!fs.existsSync(conf.tmpFolder)) {
@@ -64,7 +65,7 @@ function respondWithHelloWorld(req, res, next) {
     res.end();
 }
 
-function respondForGETProcessAndWait(req, res, next) {
+function respondForGETProcessAndWaitForX(req, res, next) {
     if (processors[req.params.processor] !== undefined && typeof processors[req.params.processor] === 'function') {
         res.send(405, 'Route ok. But you should POST your request.')
     } else {
@@ -73,27 +74,59 @@ function respondForGETProcessAndWait(req, res, next) {
     next();
 }
 
-function respondForPOSTProcessAndWait(req, res, next) {
-    let check = requestTest(req);
+function respondForPOSTProcessAndWaitForDownload(req, res, next) {
+    respondForPOSTProcessAndWait(DOWNLOAD, req, res, next)
+}
+function respondForPOSTProcessAndWaitForStatus(req, res, next) {
+    respondForPOSTProcessAndWait(STATUS, req, res, next)
+}
+
+function respondForPOSTProcessAndWait(what, req, res, next) {
+    var jsonBody;
+    if (req.body !== undefined && req.body.data !== undefined) {
+        //Form submission in a data attribute
+        jsonBody = JSON.parse(req.body.data);
+    } else {
+        //regular json body submission
+        jsonBody = req.body;
+    }
+
+    let check = requestTest(req, jsonBody);
+
     if (check.code == 200) {
-        processors[req.params.processor](conf, req.body, res, next);
+        processors[req.params.processor](what, conf, jsonBody, res, next);
     } else {
         res.send(check.code, check.message);
     }
     next();
 }
 
-function requestTest(req) {
+function respondForGETDownloadResult(req, res, next) {
+        if (req.params.processor !== undefined &&
+            processors[req.params.processor] !== undefined && 
+            typeof processors[req.params.processor].download === 'function' &&
+            req.params.hash !== undefined &&
+            req.params.dlname !== undefined
+        ) {
+            processors[req.params.processor].download(req.params.hash,req.params.dlname,conf,res, next);
+        }
+        else {
+            res.send(400, 'Your request is confusing. Please check');
+
+        }
+}
+
+function requestTest(req, jsonBody) {
     if (processors[req.params.processor] !== undefined && typeof processors[req.params.processor] === 'function') {
-        if (req.body !== undefined && req.body.name !== undefined && req.body.files !== undefined && Array.isArray(req.body.files)) {
+        if (jsonBody !== undefined && jsonBody.name !== undefined && jsonBody.files !== undefined && Array.isArray(jsonBody.files)) {
             if (conf.targetWhitelist !== undefined && conf.targetWhitelist !== '') {
                 var targetWhitelistMatcher = new RegExp(conf.targetWhitelist);
                 var whiteListCheck = true;
             } else {
                 var whiteListCheck = false;
             }
-            for (let index = 0; index < req.body.files.length; ++index) {
-                let file = req.body.files[index];
+            for (let index = 0; index < jsonBody.files.length; ++index) {
+                let file = jsonBody.files[index];
                 if (file.uri === undefined) {
                     return {
                         code: 400,
@@ -133,8 +166,11 @@ server.use(restifyBodyParser());
 
 server.get('/', respondWithHelloWorld);
 server.get('/api', respondWithHelloWorld);
-server.get('/api/:processor/and/wait', respondForGETProcessAndWait);
-server.post('/api/:processor/and/wait', respondForPOSTProcessAndWait);
+server.get('/api/:processor/and/wait/for/download', respondForGETProcessAndWaitForX);
+server.get('/api/:processor/and/wait/for/status', respondForGETProcessAndWaitForX);
+server.post('/api/:processor/and/wait/for/download', respondForPOSTProcessAndWaitForDownload);
+server.post('/api/:processor/and/wait/for/status', respondForPOSTProcessAndWaitForStatus);
+server.get('/api/download/:processor/:hash/:dlname', respondForGETDownloadResult);
 
 
 server.pre(restify.pre.userAgentConnection());
@@ -145,5 +181,6 @@ if (process.env.NODE_ENV === 'test') {
         directory: __dirname,
         default: '/index.html'
     }));
+    server.conf.deleteFilesEvenOnErrors=true;
 }
 module.exports = server;

@@ -7,8 +7,9 @@ let chaiHttp = require('chai-http');
 let server = require('../server');
 let should = chai.should();
 let pdfjsLib = require('pdfjs-dist');
-let binaryParser = require('./lib/Tools.js').binaryParser;
+let binaryParser = require('./lib/test-tools.js').binaryParser;
 let JSZip = require('jszip');
+const debug = require('debug')('doc-processor-server')
 
 chai.use(chaiHttp);
 
@@ -18,10 +19,10 @@ describe('ZIP Tests', () => {
         //console.log("beforeEach ...");
         done();
     });
-    describe('GET /api/zip/and/wait', () => {
+    describe('GET /api/zip/and/wait/for/download', () => {
         it('it should return a 405 status code +  description (right processor)', (done) => {
             chai.request(server)
-                .get('/api/zip/and/wait')
+                .get('/api/zip/and/wait/for/download')
                 .end((err, res) => {
                     res.should.have.status(405);
                     res.body.should.be.equal("Route ok. But you should POST your request.");
@@ -30,8 +31,30 @@ describe('ZIP Tests', () => {
         });
     });
 
+    describe('GET /api/zip/and/wait/for/status', () => {
+        it('it should return a 405 status code +  description (right processor)', (done) => {
+            chai.request(server)
+                .get('/api/zip/and/wait/for/status')
+                .end((err, res) => {
+                    res.should.have.status(405);
+                    res.body.should.be.equal("Route ok. But you should POST your request.");
+                    done();
+                });
+        });
+    });
+    describe('GET /api/download/zip/badid0000000/name', () => {
+        it('it should return a 404 status code +  description (right processor)', (done) => {
+            chai.request(server)
+                .get('/api/download/zip/badid0000000/name')
+                .end((err, res) => {
+                    res.should.have.status(404);
+                    res.text.should.be.equal("Could not find the file.");
+                    done();
+                });
+        });
+    });
 
-    describe('POST /api/zip/and/wait', () => {
+    describe('POST /api/zip/and/wait/for/download', () => {
         it('it should download and zip the given pdfs. The result should be in the right structure', (done) => {
             let port = server.address().port;
             let conf = {
@@ -51,7 +74,7 @@ describe('ZIP Tests', () => {
                 ]
             }
             chai.request(server)
-                .post('/api/zip/and/wait')
+                .post('/api/zip/and/wait/for/download')
                 .send(conf)
                 .buffer()
                 .parse(binaryParser)
@@ -76,8 +99,57 @@ describe('ZIP Tests', () => {
         });
     });
 
+    describe('POST /api/zip/and/wait/for/status + GET the file and check the structure', () => {
+        it('it should download and zip the given pdfs. The result should be in the right structure', (done) => {
+            let port = server.address().port;
+            let conf = {
+                "name": "conf00",
+                "files": [{
+                        "uri": "http://localhost:" + port + "/testresources/1.pdf",
+                        "folder": "a"
+                    },
+                    {
+                        "uri": "http://localhost:" + port + "/testresources/2.pdf",
+                        "folder": "b"
+                    },
+                    {
+                        "uri": "http://localhost:" + port + "/testresources/3.pdf",
+                        "folder": "z"
+                    },
+                ]
+            }
+            chai.request(server)
+                .post('/api/zip/and/wait/for/status')
+                .send(conf)
+                .end((err, postres) => {
+                    postres.should.have.status(200);
+                    chai.request(server)
+                        .get('/api/download/zip/' + postres.body.id + "/outname")
+                        .buffer()
+                        .parse(binaryParser)
+                        .end((err, res) => {
+                            JSZip.loadAsync(res.body).then(function (zip) {
+                                zip.should.have.property('files');
+                                zip.files.should.have.property('a/');
+                                zip.files['a/'].dir.should.be.true;
+                                zip.files.should.have.property('a/1.pdf');
+                                zip.files.should.have.property('b/');
+                                zip.files['b/'].dir.should.be.true;
+                                zip.files.should.have.property('b/2.pdf');
+                                zip.files.should.have.property('z/');
+                                zip.files['z/'].dir.should.be.true;
+                                zip.files.should.have.property('z/3.pdf');
+                                done();
+                            }).catch((error) => {
+                                done(error);
+                            });
+                        });
+                });
+        });
+    });
 
-    describe('POST /api/zip/and/wait', () => {
+
+    describe('POST /api/zip/and/wait/for/download', () => {
         it('it should download and zip the given pdfs. The result should be in the right structure (multiple files in one folder)', (done) => {
             let port = server.address().port;
             let conf = {
@@ -105,7 +177,7 @@ describe('ZIP Tests', () => {
                 ]
             }
             chai.request(server)
-                .post('/api/zip/and/wait')
+                .post('/api/zip/and/wait/for/download')
                 .send(conf)
                 .buffer()
                 .parse(binaryParser)
@@ -131,7 +203,7 @@ describe('ZIP Tests', () => {
                 });
         });
     });
-    describe('POST /api/zip/and/wait with wrong conf object (wrong atttributes)', () => {
+    describe('POST /api/zip/and/wait/for/download with wrong conf object (wrong atttributes)', () => {
         it('it should return status code 400 + description', (done) => {
             let port = server.address().port;
             let conf = {
@@ -142,7 +214,7 @@ describe('ZIP Tests', () => {
                 }]
             }
             chai.request(server)
-                .post('/api/zip/and/wait')
+                .post('/api/zip/and/wait/for/download')
                 .send(conf)
                 .end((err, res) => {
                     res.should.have.status(400);
@@ -151,7 +223,7 @@ describe('ZIP Tests', () => {
                 });
         });
     });
-    describe('POST /api/zip/and/wait with wrong conf object (no file array)', () => {
+    describe('POST /api/zip/and/wait/for/download with wrong conf object (no file array)', () => {
         it('it should return status code 400 + description', (done) => {
             let port = server.address().port;
             let conf = {
@@ -162,7 +234,7 @@ describe('ZIP Tests', () => {
                 }
             }
             chai.request(server)
-                .post('/api/zip/and/wait')
+                .post('/api/zip/and/wait/for/download')
                 .send(conf)
                 .end((err, res) => {
                     res.should.have.status(400);
@@ -171,7 +243,7 @@ describe('ZIP Tests', () => {
                 });
         });
     });
-    describe('POST /api/zip/and/wait with wrong conf object (no name)', () => {
+    describe('POST /api/zip/and/wait/for/download with wrong conf object (no name)', () => {
         it('it should return status code 400 + description', (done) => {
             let port = server.address().port;
             let conf = {
@@ -181,7 +253,7 @@ describe('ZIP Tests', () => {
                 }
             }
             chai.request(server)
-                .post('/api/zip/and/wait')
+                .post('/api/zip/and/wait/for/download')
                 .send(conf)
                 .end((err, res) => {
                     res.should.have.status(400);
@@ -190,7 +262,7 @@ describe('ZIP Tests', () => {
                 });
         });
     });
-    describe('POST /api/zip/and/wait with non existing files in conf object', () => {
+    describe('POST /api/zip/and/wait/for/download with non existing files in conf object', () => {
         it('it should return status code 500 + description', (done) => {
             let port = server.address().port;
             let conf = {
@@ -201,7 +273,7 @@ describe('ZIP Tests', () => {
                 }]
             }
             chai.request(server)
-                .post('/api/zip/and/wait')
+                .post('/api/zip/and/wait/for/download')
                 .send(conf)
                 .end((err, res) => {
                     res.should.have.status(500);
@@ -210,7 +282,7 @@ describe('ZIP Tests', () => {
                 });
         });
     });
-    describe('POST /api/zip/and/wait with existing and non-existing files in conf object', () => {
+    describe('POST /api/zip/and/wait/for/download with existing and non-existing files in conf object', () => {
         it('it should return status code 500 + description', (done) => {
             let port = server.address().port;
             let conf = {
@@ -224,7 +296,7 @@ describe('ZIP Tests', () => {
                 }]
             }
             chai.request(server)
-                .post('/api/zip/and/wait')
+                .post('/api/zip/and/wait/for/download')
                 .send(conf)
                 .end((err, res) => {
                     res.should.have.status(500);
@@ -233,7 +305,7 @@ describe('ZIP Tests', () => {
                 });
         });
     });
-    describe('POST /api/zip/and/wait with only prohibited files in conf object', () => {
+    describe('POST /api/zip/and/wait/for/download with only prohibited files in conf object', () => {
         it('it should return status code 403 + description', (done) => {
             let port = server.address().port;
             let conf = {
@@ -245,7 +317,7 @@ describe('ZIP Tests', () => {
             }
             server.conf.targetWhitelist = "^(http|https):\\/\\/localhost:\\d*\\/.*"
             chai.request(server)
-                .post('/api/zip/and/wait')
+                .post('/api/zip/and/wait/for/download')
                 .send(conf)
                 .end((err, res) => {
                     res.should.have.status(403);
@@ -254,7 +326,7 @@ describe('ZIP Tests', () => {
                 });
         });
     });
-    describe('POST /api/zip/and/wait with existing files but also prohibited files in conf object', () => {
+    describe('POST /api/zip/and/wait/for/download with existing files but also prohibited files in conf object', () => {
         it('it should return status code 403 + description', (done) => {
             let port = server.address().port;
             let conf = {
@@ -269,7 +341,7 @@ describe('ZIP Tests', () => {
             }
             server.conf.targetWhitelist = "^(http|https):\\/\\/localhost:\\d*\\/.*"
             chai.request(server)
-                .post('/api/zip/and/wait')
+                .post('/api/zip/and/wait/for/download')
                 .send(conf)
                 .end((err, res) => {
                     res.should.have.status(403);
@@ -279,7 +351,7 @@ describe('ZIP Tests', () => {
         });
     });
 
-   describe('POST /api/zip/and/wait with only prohibited files in conf object and disabled the whitelisting again', () => {
+    describe('POST /api/zip/and/wait/for/download with only prohibited files in conf object and disabled the whitelisting again', () => {
         it('it should return status code 200', (done) => {
             let port = server.address().port;
             let conf = {
@@ -292,7 +364,7 @@ describe('ZIP Tests', () => {
             let wlBackup = server.conf.targetWhitelist;
             server.conf.targetWhitelist = '';
             chai.request(server)
-                .post('/api/zip/and/wait')
+                .post('/api/zip/and/wait/for/download')
                 .send(conf)
                 .end((err, res) => {
                     res.should.have.status(200);

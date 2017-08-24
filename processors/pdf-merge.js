@@ -2,19 +2,8 @@ var execSync = require('child_process').execSync;
 var execAsync = require('child_process').exec;
 var numeral = require('numeral');
 var urlencode = require('urlencode');
-
+var md5 = require('js-md5');
 const debug = require('debug')('doc-processor-server')
-
-exports.pdfmerge = function merge(conf, job, res, next) {
-    if (conf.speechComments) {
-        execSync("say 'PDF-Verarbeitung gestartet'");
-    } else {
-        debug("pdfmerge started");
-    }
-
-};
-
-
 var execSync = require('child_process').execSync;
 var execAsync = require('child_process').exec;
 var fs = require('fs');
@@ -23,17 +12,20 @@ var async = require('async');
 var http = require('http');
 var https = require('https');
 var path = require('path');
+let downloadHelper = require('./lib/tools.js').downloadHelper;
 
-exports.pdfmerge = function merge(conf, job, res, next) {
-    var nonce = job.name + "-" + Math.floor(Math.random() * 10000000);
-    if (conf.speechComments) {
-        execSync("say 'PDF-Verarbeitung gestartet'");
-    } else {
-        debug("pdfmerge started");
-    }
+exports.download = function download(hash, dlname, conf, res, next) {
+    downloadHelper("pdf-merge", "pdf", hash, dlname, conf, res, next);
+}
 
+
+exports.pdfmerge = function merge(result, conf, job, res, next) {
+    debug("pdfmerge started");
+    let rnd = Math.floor(Math.random() * 1000)
+    let hash = md5(JSON.stringify(job));
+    let nonce = hash + "-" + rnd
     //Mkdirs
-    var jobdir = conf.tmpFolder + "/job-pdf-merge-" + nonce;
+    let jobdir = conf.tmpFolder + "/job-pdf-merge-" + nonce;
     var indir = jobdir + "/in"
     fs.mkdirSync(jobdir);
     fs.mkdirSync(indir);
@@ -45,10 +37,10 @@ exports.pdfmerge = function merge(conf, job, res, next) {
         var prefix = numeral(i).format('000');
         i++;
         var filename = path.basename(task.uri);
-        var urlencodedFilename=urlencode(path.basename(task.uri));
-        var urlprefix=path.dirname(task.uri);
-        var url=urlprefix+"/"+urlencodedFilename;
-        debug("go for "+url);
+        var urlencodedFilename = urlencode(path.basename(task.uri));
+        var urlprefix = path.dirname(task.uri);
+        var url = urlprefix + "/" + urlencodedFilename;
+        debug("go for " + url);
         var file = fs.createWriteStream(indir + "/" + prefix + "-" + task.folder + "-" + filename);
         if ((task.uri.startsWith("https"))) {
             var request = https.get(url, function (response) {
@@ -63,6 +55,10 @@ exports.pdfmerge = function merge(conf, job, res, next) {
                         code: 500,
                         message: "At least one document could not be retrieved."
                     };
+                    if (conf.deleteFilesEvenOnErrors) {
+                        debug("remove " + jobdir);
+                        execSync("rm -rf  " + jobdir);
+                    }
                     res.writeHead(e.code);
                     res.end(e.message);
                     next(e);
@@ -91,8 +87,8 @@ exports.pdfmerge = function merge(conf, job, res, next) {
         debug(job.files.length + ' downloads finished');
         //Merge the results
         if (!err) {
-            var zipCmd = "pdftk *.pdf cat output ../out.pdf"
-            execAsync(zipCmd, {
+            var cmd = "pdftk *.pdf cat output ../out.pdf"
+            execAsync(cmd, {
                 "cwd": indir
             }, function (error, stdout, stderr) {
 
@@ -101,6 +97,10 @@ exports.pdfmerge = function merge(conf, job, res, next) {
                         code: 500,
                         message: "Error within the merge command."
                     };
+                    if (conf.deleteFilesEvenOnErrors) {
+                        debug("remove " + jobdir);
+                        execSync("rm -rf  " + jobdir);
+                    }
                     res.writeHead(e.code);
                     res.end(e.message);
                     next(e);
@@ -114,26 +114,51 @@ exports.pdfmerge = function merge(conf, job, res, next) {
                                 code: 500,
                                 message: "Could not find the output file."
                             };
+                            if (conf.deleteFilesEvenOnErrors) {
+                                debug("remove " + jobdir);
+                                execSync("rm -rf  " + jobdir);
+                            }
                             res.writeHead(e.code);
                             res.end(e.message);
                             next(e);
                             return;
                         }
-
-                        res.contentType = mime.lookup(filepath);
-                        res.writeHead(200, {
-                            "Content-Disposition": "attachment;filename=" + job.name + ".pdf"
-                        });
-                        res.end(data);
-                        if (!conf.keepFilesForDebugging) {
-                            debug("remove " + jobdir);
-                            execSync("rm -rf  " + jobdir);
+                        if (result === 'DOWNLOAD') {
+                            res.contentType = mime.lookup(filepath);
+                            res.writeHead(200, {
+                                "Content-Disposition": "attachment;filename=" + job.name + ".pdf"
+                            });
+                            res.end(data);
+                            if (!conf.keepFilesForDebugging) {
+                                debug("remove " + jobdir);
+                                execSync("rm -rf  " + jobdir);
+                            }
+                            return next();
+                        } else if (result === 'STATUS') {
+                            res.contentType = 'application/json'
+                            //res.writeHead(200);
+                            res.send(200, {
+                                status: 200,
+                                id: nonce
+                            });
+                            return next();
+                        } else {
+                            throw {
+                                error: "result has to be either DOWNLOAD or STATUS (it was " + result + ")"
+                            };
+                            return next();
                         }
-                        return next();
+
+
                     });
                 }
             });
         } else {
+            if (conf.deleteFilesEvenOnErrors) {
+                debug("remove " + jobdir);
+                execSync("rm -rf  " + jobdir);
+            }
+
             debug("Merging skipped due to an error", err);
         }
     });
