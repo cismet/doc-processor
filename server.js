@@ -9,6 +9,8 @@ var execSync = require('child_process').execSync;
 var execAsync = require('child_process').exec;
 var restifyBodyParser = require('restify-plugins').bodyParser;
 const debug = require('debug')('doc-processor-server')
+const corsMiddleware = require('restify-cors-middleware')
+
 let STATUS = 'STATUS';
 let DOWNLOAD = 'DOWNLOAD';
 
@@ -27,7 +29,8 @@ var defaults = {
     "keepFilesForDebugging": false,
     "deleteFilesEvenOnErrors": false,
     "processors": ["zip", "pdfmerge"],
-    "targetWhitelist": ""
+    "targetWhitelist": "",
+    "corsAccessControlAllowOrigins": ['http://localhost:*']
 };
 
 var conf = {
@@ -38,6 +41,8 @@ var conf = {
     "keepFilesForDebugging": extConf.keepFilesForDebugging || defaults.keepFilesForDebugging,
     "targetWhitelist": extConf.targetWhitelist || defaults.targetWhitelist,
     "deleteFilesEvenOnErrors": extConf.deleteFilesEvenOnErrors || defaults.deleteFilesEvenOnErrors,
+    "corsAccessControlAllowOrigins": extConf.corsAccessControlAllowOrigins || defaults.corsAccessControlAllowOrigins,
+
 };
 
 if (!fs.existsSync(conf.tmpFolder)) {
@@ -162,6 +167,12 @@ var server = restify.createServer();
 //server.use(restify.acceptParser(server.acceptable));
 //server.use(restify.queryParser());
 server.use(restifyBodyParser());
+const cors = corsMiddleware({
+  origins: conf.corsAccessControlAllowOrigins,
+})
+ 
+server.pre(cors.preflight)
+server.use(cors.actual)
 
 
 server.get('/', respondWithHelloWorld);

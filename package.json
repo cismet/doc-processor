@@ -20,6 +20,7 @@
     "numeral": "^2.0.6",
     "path": "^0.12.7",
     "restify": "^5.1.0",
+    "restify-cors-middleware": "^1.0.1",
     "restify-plugins": "^1.6.0",
     "urlencode": "^1.1.0"
   },

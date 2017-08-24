@@ -19,7 +19,7 @@ const downloadHelper = function download(processor,filetype,hash, dlname, conf, 
         }
         res.contentType = mime.lookup(filepath);
         res.writeHead(200, {
-            "Content-Disposition": "attachment;filename=" + dlname + ".pdf"
+            "Content-Disposition": "attachment;filename=" + dlname + "."+filetype
         });
         res.end(data);
         if (!conf.keepFilesForDebugging ) {
