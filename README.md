@@ -63,7 +63,9 @@ docker build -t cismet/doc-processor .
     "tmpFolder": "./tmp/",
     "keepFilesForDebugging": false,
     "processors": ["zip", "pdfmerge"],
-    "targetWhitelist": ""
+    "targetWhitelist": "",
+    "corsAccessControlAllowOrigins": ['http://localhost:*']
+
 }
 ```
 
@@ -75,6 +77,8 @@ docker build -t cismet/doc-processor .
     "tmpFolder": The tmp folder (ignore if you are doing docker)
     "keepFilesForDebugging": set to true if you are a keeper ;-)
     "targetWhitelist": a regex to match all allowed download locations. all downloads allowed if empty. Example: "^(http|https):\\/\\/localhost:\\d*\\/.*"
+    "corsAccessControlAllowOrigins": An array(!!!) of the allowed origins [more](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Origin)
+
 ```
 
 ## start
