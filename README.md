@@ -104,18 +104,41 @@ docker pull cismet/doc-processor
 docker-compose down && docker-compose up -d 
 ````
 
+## usage
 
-
+you have 2 options:
+1. `POST /api/[processor]/and/wait/for/download` will start the process and return the result when it is ready
+2.1 `POST /api/[processor]]/and/wait/for/status` will start the process and (if it is done) return a status with an id
+you can then 
+2.2 `GET /api/download/[pdfmerge]/1337/nameOfTheOutput`to get the result
 
 ## examples
 ```bash 
+# direct download
 curl -H "Content-Type: application/json" \
 -X POST -d '{"name":"simpleMergeDemo","files":[{"uri":"https://raw.githubusercontent.com/cismet/doc-processor/dev/testresources/1.pdf","folder":"first"},{"uri":"https://raw.githubusercontent.com/cismet/doc-processor/dev/testresources/2.pdf","folder":"second"}]}' \
-http://localhost:8081/api/pdfmerge/and/wait > mergeDemo.pdf
+http://localhost:8081/api/pdfmerge/and/wait/for/download > mergeDemo.pdf
 
 curl -H "Content-Type: application/json" \
 -X POST -d '{"name":"simpleMergeDemo","files":[{"uri":"https://raw.githubusercontent.com/cismet/doc-processor/dev/testresources/1.pdf","folder":"first"},{"uri":"https://raw.githubusercontent.com/cismet/doc-processor/dev/testresources/2.pdf","folder":"second"}]}' \
-http://localhost:8081/api/zip/and/wait > zipDemo.zip
+http://localhost:8081/api/zip/and/wait/for/download > zipDemo.zip
+
+# pdf-merge: get the status
+curl -H "Content-Type: application/json" \
+-X POST -d '{"name":"simpleMergeDemo","files":[{"uri":"https://raw.githubusercontent.com/cismet/doc-processor/dev/testresources/1.pdf","folder":"first"},{"uri":"https://raw.githubusercontent.com/cismet/doc-processor/dev/testresources/2.pdf","folder":"second"}]}' \
+http://localhost:8081/api/pdfmerge/and/wait/for/status 
+
+# pdf-merge: and then get the file (change the id accordingto the output of the last result)
+curl -v http://localhost:8081/api/download/pdfmerge/eefab7c1c3d72e0004f3b98440f5b13c-27xxx/name --output x2.pdf
+
+# zip: get the status
+
+curl -H "Content-Type: application/json" \
+-X POST -d '{"name":"simpleMergeDemo","files":[{"uri":"https://raw.githubusercontent.com/cismet/doc-processor/dev/testresources/1.pdf","folder":"first"},{"uri":"https://raw.githubusercontent.com/cismet/doc-processor/dev/testresources/2.pdf","folder":"second"}]}' \
+http://localhost:8081/api/zip/and/wait/for/status
+
+# zip: and then get the file (change the id accordingto the output of the last result)
+curl -v http://localhost:8081/api/download/zip/eefab7c1c3d72e0004f3b98440f5b13c-27xxx/name --output x2.zip
 
 ```
 
