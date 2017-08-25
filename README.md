@@ -114,8 +114,11 @@ docker-compose down && docker-compose up -d
 
 you have 2 options:
 1. `POST /api/[processor]/and/wait/for/download` will start the process and return the result when it is ready
+
 2.1 `POST /api/[processor]]/and/wait/for/status` will start the process and (if it is done) return a status with an id
+
 you can then 
+
 2.2 `GET /api/download/[pdfmerge]/1337/nameOfTheOutput`to get the result
 
 ## examples
