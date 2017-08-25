@@ -59,12 +59,13 @@ docker build -t cismet/doc-processor .
 {
     "port": 8081,
     "host": "0.0.0.0",
+    "server": "http://localhost:8081",
     "workers": 10,
     "tmpFolder": "./tmp/",
     "keepFilesForDebugging": false,
     "processors": ["zip", "pdfmerge"],
     "targetWhitelist": "",
-    "corsAccessControlAllowOrigins": ['http://localhost:*']
+    "corsAccessControlAllowOrigins": ["http://localhost:*"]
 
 }
 ```
@@ -73,6 +74,7 @@ docker build -t cismet/doc-processor .
 
     "port": The port where the service is listening (ignore if you are doing docker)
     "host": The host where the service is listening (ignore if you are doing docker)
+    "server": The url prefix how you can reach the server (in production != localhost) With thois property there is a `href` prop build in the status which can be used to retrieve the result file.
     "workers": The numer of parallel workers
     "tmpFolder": The tmp folder (ignore if you are doing docker)
     "keepFilesForDebugging": set to true if you are a keeper ;-)

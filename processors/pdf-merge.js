@@ -7,7 +7,6 @@ const debug = require('debug')('doc-processor-server')
 var execSync = require('child_process').execSync;
 var execAsync = require('child_process').exec;
 var fs = require('fs');
-var mime = require('mime');
 var async = require('async');
 var http = require('http');
 var https = require('https');
@@ -124,9 +123,9 @@ exports.pdfmerge = function merge(result, conf, job, res, next) {
                             return;
                         }
                         if (result === 'DOWNLOAD') {
-                            res.contentType = mime.lookup(filepath);
                             res.writeHead(200, {
-                                "Content-Disposition": "attachment;filename=" + job.name + ".pdf"
+                                "Content-Disposition":"filename=" + job.name + ".pdf",
+                                "Content-Type":"application/pdf"
                             });
                             res.end(data);
                             if (!conf.keepFilesForDebugging) {
@@ -139,7 +138,8 @@ exports.pdfmerge = function merge(result, conf, job, res, next) {
                             //res.writeHead(200);
                             res.send(200, {
                                 status: 200,
-                                id: nonce
+                                id: nonce,
+                                href: conf.server+"/api/download/pdfmerge/"+nonce+"/"+job.name
                             });
                             return next();
                         } else {

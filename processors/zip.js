@@ -1,7 +1,6 @@
 var execSync = require('child_process').execSync;
 var execAsync = require('child_process').exec;
 var fs = require('fs');
-var mime = require('mime');
 var md5 = require('js-md5');
 var async = require('async');
 var http = require('http');
@@ -122,9 +121,9 @@ exports.zip = function zip(result, conf, job, res, next) {
                             return;
                         }
                         if (result === 'DOWNLOAD') {
-                            res.contentType = mime.lookup(filepath);
                             res.writeHead(200, {
-                                "Content-Disposition": "attachment;filename=" + job.name + ".zip"
+                                "Content-Disposition":"filename=" + job.name + ".zip",
+                                "Content-Type":"application/zip"
                             });
                             res.end(data);
                             if (!conf.keepFilesForDebugging) {
@@ -137,7 +136,9 @@ exports.zip = function zip(result, conf, job, res, next) {
                             //res.writeHead(200);
                             res.send(200, {
                                 status: 200,
-                                id: nonce
+                                id: nonce,
+                                href: conf.server+"/api/download/zip/"+nonce+"/"+job.name
+                                
                             });
                             return next();
                         } else {
