@@ -24,7 +24,8 @@ if (extConf.customExtensions !== undefined) {
 var defaults = {
     "port": 8081,
     "host": "0.0.0.0",
-    "workers": 10,
+    "server": "http://localhost:8081",
+    "workers": 1,
     "tmpFolder": "./tmp",
     "keepFilesForDebugging": false,
     "deleteFilesEvenOnErrors": false,
@@ -36,6 +37,7 @@ var defaults = {
 var conf = {
     "port": extConf.port || defaults.port,
     "host": extConf.host || defaults.host,
+    "server":  extConf.server || defaults.server,    
     "workers": extConf.workers || defaults.workers,
     "tmpFolder": extConf.tmpFolder || defaults.tmpFolder,
     "keepFilesForDebugging": extConf.keepFilesForDebugging || defaults.keepFilesForDebugging,

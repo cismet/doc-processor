@@ -1,5 +1,4 @@
 var fs = require('fs');
-var mime = require('mime');
 const debug = require('debug')('doc-processor-server')
 var execSync = require('child_process').execSync;
 
@@ -17,9 +16,10 @@ const downloadHelper = function download(processor,filetype,hash, dlname, conf, 
             next(e);
             return;
         }
-        res.contentType = mime.lookup(filepath);
+        // "Content-Disposition": "attachment;filename=" + dlname + "."+filetype,
         res.writeHead(200, {
-            "Content-Disposition": "attachment;filename=" + dlname + "."+filetype
+            "Content-Disposition":"filename=" + dlname + "."+filetype,
+            "Content-Type":"application/"+filetype
         });
         res.end(data);
         if (!conf.keepFilesForDebugging ) {
