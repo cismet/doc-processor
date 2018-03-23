@@ -18,6 +18,13 @@ COPY . .
 
 EXPOSE 8081
 
+
+RUN locale-gen de_DE.UTF-8
+ENV LANG de_DE.UTF-8
+ENV LANGUAGE de_DE.UTF-8
+ENV LC_ALL de_DE.UTF-8
+ENV TZ Europe/Berlin
+
 CMD [ "npm", "start" ]
 
 
