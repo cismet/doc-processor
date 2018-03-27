@@ -84,7 +84,14 @@ exports.zip = function zip(result, conf, job, res, next) {
         debug(job.files.length + ' downloads finished');
         //Zip the results
         if (!err) {
-            var cmd = "zip -r -X ../out.zip *"
+
+            //Only changes the encoding of the filenames
+            let encodingCMD="";
+            if (job.encoding && conf.allowedEncodings.indexOf(job.encoding)!=-1) {
+                encodingCMD="convmv --notest -r -f "+conf.serverSourceEncoding+" -t "+job.encoding+" * && ";
+            }
+
+            var cmd = encodingCMD+"zip -r -X ../out.zip *"
             execAsync(cmd, {
                 "cwd": indir
             }, function (error, stdout, stderr) {

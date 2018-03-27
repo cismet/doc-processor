@@ -18,8 +18,12 @@ const downloadHelper = function download(processor,filetype,hash, dlname, conf, 
         }
         // "Content-Disposition": "attachment;filename=" + dlname + "."+filetype,
         res.writeHead(200, {
-            "Content-Disposition":"filename=" + dlname + "."+filetype,
-            "Content-Type":"application/"+filetype
+           "Content-Disposition":"filename=" + dlname + "."+filetype,
+           "Cache-Control":"public, max-age=0",
+           "Accept-Ranges":"bytes",
+           "Content-Type":"application/"+filetype,
+           "Content-Length":Buffer.byteLength(data, 'utf-8')
+
         });
         res.end(data);
         if (!conf.keepFilesForDebugging ) {
