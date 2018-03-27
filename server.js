@@ -31,7 +31,9 @@ var defaults = {
     "deleteFilesEvenOnErrors": false,
     "processors": ["zip", "pdfmerge"],
     "targetWhitelist": "",
-    "corsAccessControlAllowOrigins": ['http://localhost:*']
+    "corsAccessControlAllowOrigins": ['http://localhost:*'],
+    "serverSourceEncoding": 'UTF-8',
+    "allowedEncodings": ['CP850','UTF-8']
 };
 
 var conf = {
@@ -44,6 +46,8 @@ var conf = {
     "targetWhitelist": extConf.targetWhitelist || defaults.targetWhitelist,
     "deleteFilesEvenOnErrors": extConf.deleteFilesEvenOnErrors || defaults.deleteFilesEvenOnErrors,
     "corsAccessControlAllowOrigins": extConf.corsAccessControlAllowOrigins || defaults.corsAccessControlAllowOrigins,
+    "serverSourceEncoding": extConf.serverSourceEncoding || defaults.serverSourceEncoding,
+    "allowedEncodings": extConf.allowedEncodings || defaults.allowedEncodings,
 
 };
 
