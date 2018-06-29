@@ -59,6 +59,7 @@ var conf = {
 if (conf.failFast===undefined){
     conf.failFast=defaults.failFast;
 }
+
 debug("CONFIG:");
 debug(conf);
 
