@@ -49,7 +49,7 @@ exports.zip = function zip(result, conf, job, res, next) {
                         debug("remove " + jobdir);
                         execSync("rm -rf  " + jobdir);
                     }
-                    debug("Error retrieving (failFast="+conf.failFast+")"+url);
+                    debug("Error retrieving (failFast="+conf.failFast+") "+url);
                     // res.writeHead(e.code);
                     // res.end(e.message);
                     if (conf.failFast===true) {
