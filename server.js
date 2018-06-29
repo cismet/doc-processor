@@ -21,10 +21,6 @@ if (extConf.customExtensions !== undefined) {
     debug("no custom extensions loaded");
 }
 
-debug("externalConfig")
-debug(extConf)
-debug("---")
-
 var defaults = {
     "port": 8081,
     "host": "0.0.0.0",
