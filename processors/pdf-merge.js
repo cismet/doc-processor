@@ -54,13 +54,20 @@ exports.pdfmerge = function merge(result, conf, job, res, next) {
                         code: 500,
                         message: "At least one document could not be retrieved."
                     };
-                    if (conf.deleteFilesEvenOnErrors) {
-                        debug("remove " + jobdir);
-                        execSync("rm -rf  " + jobdir);
+                    debug("Error retrieving "+url);
+                    if (conf.failFast===true) {
+                        if (conf.deleteFilesEvenOnErrors) {
+                            debug("remove " + jobdir);
+                            execSync("rm -rf  " + jobdir);
+                        }
+                        res.send(new Error("Error retrieving "+url));     
                     }
-                    res.writeHead(e.code);
-                    res.end(e.message);
-                    next(e);
+                    else {
+                        file.close();
+                        next();
+                    }
+
+
                 }
             });
         } else {
@@ -76,9 +83,13 @@ exports.pdfmerge = function merge(result, conf, job, res, next) {
                         code: 500,
                         message: "At least one document could not be retrieved."
                     };
-                    res.writeHead(e.code);
-                    res.end(e.message);
-                    next(e);
+                    if (conf.failFast===true) {
+                        res.send(new Error("Error retrieving "+url));     
+                    }
+                    else {
+                        file.close();
+                        next();
+                    }
                 }
             });
         }
@@ -92,18 +103,23 @@ exports.pdfmerge = function merge(result, conf, job, res, next) {
             }, function (error, stdout, stderr) {
 
                 if (error) {
+                    debug("Error: " +error);
                     let e = {
                         code: 500,
                         message: "Error within the merge command."
                     };
-                    if (conf.deleteFilesEvenOnErrors) {
-                        debug("remove " + jobdir);
-                        execSync("rm -rf  " + jobdir);
+                    if (conf.failFast===true) {
+                        if (conf.deleteFilesEvenOnErrors) {
+                            debug("remove " + jobdir);
+                            execSync("rm -rf  " + jobdir);
+                        }
+                        res.send(new Error(e.message));     
                     }
-                    res.writeHead(e.code);
-                    res.end(e.message);
-                    next(e);
-                    debug(error);
+                    else {
+                        next();
+                    }
+                  
+                  
                 } else {
                     //return the result
                     var filepath = jobdir + "/out.pdf";
@@ -113,13 +129,16 @@ exports.pdfmerge = function merge(result, conf, job, res, next) {
                                 code: 500,
                                 message: "Could not find the output file."
                             };
-                            if (conf.deleteFilesEvenOnErrors) {
-                                debug("remove " + jobdir);
-                                execSync("rm -rf  " + jobdir);
+                            if (conf.failFast===true) {
+                                if (conf.deleteFilesEvenOnErrors) {
+                                    debug("remove " + jobdir);
+                                    execSync("rm -rf  " + jobdir);
+                                }
+                                res.send(new Error(e.message));     
                             }
-                            res.writeHead(e.code);
-                            res.end(e.message);
-                            next(e);
+                            else {
+                                next();
+                            }
                             return;
                         }
                         if (result === 'DOWNLOAD') {

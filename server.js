@@ -21,6 +21,10 @@ if (extConf.customExtensions !== undefined) {
     debug("no custom extensions loaded");
 }
 
+debug("externalConfig")
+debug(extConf)
+debug("---")
+
 var defaults = {
     "port": 8081,
     "host": "0.0.0.0",
@@ -33,7 +37,8 @@ var defaults = {
     "targetWhitelist": "",
     "corsAccessControlAllowOrigins": ['http://localhost:*'],
     "serverSourceEncoding": 'UTF-8',
-    "allowedEncodings": ['CP850','UTF-8']
+    "allowedEncodings": ['CP850','UTF-8'],
+    "failFast": true
 };
 
 var conf = {
@@ -48,8 +53,15 @@ var conf = {
     "corsAccessControlAllowOrigins": extConf.corsAccessControlAllowOrigins || defaults.corsAccessControlAllowOrigins,
     "serverSourceEncoding": extConf.serverSourceEncoding || defaults.serverSourceEncoding,
     "allowedEncodings": extConf.allowedEncodings || defaults.allowedEncodings,
-
+    "failFast": extConf.failFast
 };
+
+if (conf.failFast===undefined){
+    conf.failFast=defaults.failFast;
+}
+debug("CONFIG:");
+debug(conf);
+
 
 if (!fs.existsSync(conf.tmpFolder)) {
     fs.mkdirSync(conf.tmpFolder);

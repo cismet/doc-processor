@@ -23,7 +23,6 @@ exports.zip = function zip(result, conf, job, res, next) {
     var indir = jobdir + "/in"
     fs.mkdirSync(jobdir);
     fs.mkdirSync(indir);
-
     //Download
     var threads = 15;
     async.eachLimit(job.files, threads, function (task, next) {
@@ -45,19 +44,21 @@ exports.zip = function zip(result, conf, job, res, next) {
                         next();
                     });
                 } else {
-                    let e = {
-                        code: 500,
-                        message: "At least one document could not be retrieved."
-
-                    };
+                    let e = new Error("At least one document could not be retrieved.");
                     if (conf.deleteFilesEvenOnErrors) {
                         debug("remove " + jobdir);
                         execSync("rm -rf  " + jobdir);
                     }
-                    debug(response)
-                    res.writeHead(e.code);
-                    res.end(e.message);
-                    next(e);
+                    debug("Error retrieving (failFast="+conf.failFast+")"+url);
+                    // res.writeHead(e.code);
+                    // res.end(e.message);
+                    if (conf.failFast===true) {
+                        res.send(new Error("Error retrieving "+url));     
+                    }
+                    else {
+                        file.close();
+                        next();
+                    }
                 }
             });
         } else {
@@ -73,9 +74,15 @@ exports.zip = function zip(result, conf, job, res, next) {
                         code: 500,
                         message: "At least one document could not be retrieved."
                     };
-                    res.writeHead(e.code);
-                    res.end(e.message);
-                    next(e);
+                  //  res.writeHead(e.code);
+                    //res.end(e.message);
+                    if (conf.failFast===true) {
+                        res.send(new Error("Error retrieving "+url));     
+                    }
+                    else {
+                        file.close();
+                        next();
+                    }
                 }
             });
 
@@ -105,10 +112,11 @@ exports.zip = function zip(result, conf, job, res, next) {
                         debug("remove " + jobdir);
                         execSync("rm -rf  " + jobdir);
                     }
-                    res.writeHead(e.code);
-                    res.end(e.message);
-                    next(e);
+                    //res.writeHead(e.code);
+                    //res.end(e.message);
                     debug(error);
+                    res.send(new Error("Error within the zip command.",error));     
+
                 } else {
                     //return the result
                     var filepath = jobdir + "/out.zip";
@@ -122,9 +130,9 @@ exports.zip = function zip(result, conf, job, res, next) {
                                 code: 500,
                                 message: "Could not find the output file."
                             };
-                            res.writeHead(e.code);
-                            res.end(e.message);
-                            next(e);
+                            // res.writeHead(e.code);
+                            // res.end(e.message);
+                            res.send(new Error("Could not find the output file.",err));     
                             return;
                         }
                         if (result === 'DOWNLOAD') {
@@ -166,6 +174,8 @@ exports.zip = function zip(result, conf, job, res, next) {
                 execSync("rm -rf  " + jobdir);
             }
             debug("Zipping skipped due to an error", err);
+            res.send(new Error("Zipping skipped due to an error", err));            
+            return next();
         }
     });
 }
