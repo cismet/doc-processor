@@ -50,24 +50,20 @@ exports.pdfmerge = function merge(result, conf, job, res, next) {
                         next();
                     });
                 } else {
-                    let e = {
-                        code: 500,
-                        message: "At least one document could not be retrieved."
-                    };
-                    debug("Error retrieving "+url);
+                    let e = new Error("At least one document could not be retrieved.");
+                    if (conf.deleteFilesEvenOnErrors) {
+                        debug("remove " + jobdir);
+                        execSync("rm -rf  " + jobdir);
+                    }
+                    debug("Error retrieving (failFast="+conf.failFast+") "+url);
                     if (conf.failFast===true) {
-                        if (conf.deleteFilesEvenOnErrors) {
-                            debug("remove " + jobdir);
-                            execSync("rm -rf  " + jobdir);
-                        }
-                        res.send(new Error("Error retrieving "+url));     
+                        res.writeHead(500);
+                        res.end(e.message);
                     }
                     else {
                         file.close();
                         next();
                     }
-
-
                 }
             });
         } else {
@@ -79,12 +75,15 @@ exports.pdfmerge = function merge(result, conf, job, res, next) {
                         next();
                     });
                 } else {
-                    let e = {
-                        code: 500,
-                        message: "At least one document could not be retrieved."
-                    };
+                    let e = new Error("At least one document could not be retrieved.");
+                    if (conf.deleteFilesEvenOnErrors) {
+                        debug("remove " + jobdir);
+                        execSync("rm -rf  " + jobdir);
+                    }
+                    debug("Error retrieving (failFast="+conf.failFast+") "+url);
                     if (conf.failFast===true) {
-                        res.send(new Error("Error retrieving "+url));     
+                        res.writeHead(500);
+                        res.end(e.message);
                     }
                     else {
                         file.close();
@@ -104,37 +103,23 @@ exports.pdfmerge = function merge(result, conf, job, res, next) {
 
                 if (error) {
                     debug("Error: " +error);
-                    let e = {
-                        code: 500,
-                        message: "Error within the merge command."
-                    };
-                    if (conf.failFast===true) {
-                        if (conf.deleteFilesEvenOnErrors) {
-                            debug("remove " + jobdir);
-                            execSync("rm -rf  " + jobdir);
-                        }
-                        res.send(new Error(e.message));     
-                    }
-                    else {
-                        next();
-                    }
-                  
-                  
+                    let e = new Error("Error within the merge command.");
+                    debug(error);
+                    res.writeHead(500);
+                    res.end(e.message);
                 } else {
                     //return the result
                     var filepath = jobdir + "/out.pdf";
                     fs.readFile(filepath, function (err, data) {
                         if (err) {
-                            let e = {
-                                code: 500,
-                                message: "Could not find the output file."
-                            };
+                            let e = new Error("Could not find the output file.");
                             if (conf.failFast===true) {
                                 if (conf.deleteFilesEvenOnErrors) {
                                     debug("remove " + jobdir);
                                     execSync("rm -rf  " + jobdir);
                                 }
-                                res.send(new Error(e.message));     
+                                res.writeHead(500);
+                                res.end(e.message);     
                             }
                             else {
                                 next();

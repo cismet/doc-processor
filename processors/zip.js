@@ -50,10 +50,9 @@ exports.zip = function zip(result, conf, job, res, next) {
                         execSync("rm -rf  " + jobdir);
                     }
                     debug("Error retrieving (failFast="+conf.failFast+") "+url);
-                    // res.writeHead(e.code);
-                    // res.end(e.message);
                     if (conf.failFast===true) {
-                        res.send(new Error("Error retrieving "+url));     
+                        res.writeHead(500);
+                        res.end(e.message);
                     }
                     else {
                         file.close();
@@ -70,14 +69,15 @@ exports.zip = function zip(result, conf, job, res, next) {
                         next();
                     });
                 } else {
-                    let e = {
-                        code: 500,
-                        message: "At least one document could not be retrieved."
-                    };
-                  //  res.writeHead(e.code);
-                    //res.end(e.message);
+                    let e = new Error("At least one document could not be retrieved.");
+                    if (conf.deleteFilesEvenOnErrors) {
+                        debug("remove " + jobdir);
+                        execSync("rm -rf  " + jobdir);
+                    }
+                    debug("Error retrieving (failFast="+conf.failFast+") "+url);
                     if (conf.failFast===true) {
-                        res.send(new Error("Error retrieving "+url));     
+                        res.writeHead(500);
+                        res.end(e.message);
                     }
                     else {
                         file.close();
@@ -104,18 +104,10 @@ exports.zip = function zip(result, conf, job, res, next) {
             }, function (error, stdout, stderr) {
 
                 if (error) {
-                    let e = {
-                        code: 500,
-                        message: "Error within the zip command."
-                    };
-                    if (conf.deleteFilesEvenOnErrors) {
-                        debug("remove " + jobdir);
-                        execSync("rm -rf  " + jobdir);
-                    }
-                    //res.writeHead(e.code);
-                    //res.end(e.message);
+                    let e = new Error("Error within the zip command.");
                     debug(error);
-                    res.send(new Error("Error within the zip command.",error));     
+                    res.writeHead(500);
+                    res.end(e.message);
 
                 } else {
                     //return the result
@@ -126,13 +118,9 @@ exports.zip = function zip(result, conf, job, res, next) {
                                 debug("remove " + jobdir);
                                 execSync("rm -rf  " + jobdir);
                             }
-                            let e = {
-                                code: 500,
-                                message: "Could not find the output file."
-                            };
-                            // res.writeHead(e.code);
-                            // res.end(e.message);
-                            res.send(new Error("Could not find the output file.",err));     
+                            let e = new Error("Could not find the output file.");
+                            res.writeHead(500);
+                            res.end(e.message);
                             return;
                         }
                         if (result === 'DOWNLOAD') {
@@ -174,7 +162,9 @@ exports.zip = function zip(result, conf, job, res, next) {
                 execSync("rm -rf  " + jobdir);
             }
             debug("Zipping skipped due to an error", err);
-            res.send(new Error("Zipping skipped due to an error", err));            
+            let e = new Error("Zipping skipped due to an error");
+            res.writeHead(500);
+            res.end(e.message);            
             return next();
         }
     });
