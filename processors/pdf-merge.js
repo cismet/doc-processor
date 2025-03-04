@@ -55,8 +55,8 @@ exports.pdfmerge = function merge(result, conf, job, res, next) {
                         debug("remove " + jobdir);
                         execSync("rm -rf  " + jobdir);
                     }
-                    debug("Error retrieving (failFast="+conf.failFast+") "+url);
-                    if (conf.failFast===true) {
+                    debug("Error retrieving (failFast=" + conf.failFast + ") " + url);
+                    if (conf.failFast === true) {
                         res.writeHead(500);
                         res.end(e.message);
                     }
@@ -80,8 +80,8 @@ exports.pdfmerge = function merge(result, conf, job, res, next) {
                         debug("remove " + jobdir);
                         execSync("rm -rf  " + jobdir);
                     }
-                    debug("Error retrieving (failFast="+conf.failFast+") "+url);
-                    if (conf.failFast===true) {
+                    debug("Error retrieving (failFast=" + conf.failFast + ") " + url);
+                    if (conf.failFast === true) {
                         res.writeHead(500);
                         res.end(e.message);
                     }
@@ -102,7 +102,7 @@ exports.pdfmerge = function merge(result, conf, job, res, next) {
             }, function (error, stdout, stderr) {
 
                 if (error) {
-                    debug("Error: " +error);
+                    debug("Error: " + error);
                     let e = new Error("Error within the merge command.");
                     debug(error);
                     res.writeHead(500);
@@ -113,13 +113,13 @@ exports.pdfmerge = function merge(result, conf, job, res, next) {
                     fs.readFile(filepath, function (err, data) {
                         if (err) {
                             let e = new Error("Could not find the output file.");
-                            if (conf.failFast===true) {
+                            if (conf.failFast === true) {
                                 if (conf.deleteFilesEvenOnErrors) {
                                     debug("remove " + jobdir);
                                     execSync("rm -rf  " + jobdir);
                                 }
                                 res.writeHead(500);
-                                res.end(e.message);     
+                                res.end(e.message);
                             }
                             else {
                                 next();
@@ -128,8 +128,8 @@ exports.pdfmerge = function merge(result, conf, job, res, next) {
                         }
                         if (result === 'DOWNLOAD') {
                             res.writeHead(200, {
-                                "Content-Disposition":"filename=" + job.name + ".pdf",
-                                "Content-Type":"application/pdf"
+                                "Content-Disposition": "filename=" + job.name + ".pdf",
+                                "Content-Type": "application/pdf"
                             });
                             res.end(data);
                             if (!conf.keepFilesForDebugging) {
@@ -143,7 +143,7 @@ exports.pdfmerge = function merge(result, conf, job, res, next) {
                             res.send(200, {
                                 status: 200,
                                 id: nonce,
-                                href: conf.server+"/api/download/pdfmerge/"+nonce+"/"+job.name
+                                href: conf.server + "/api/download/pdfmerge/" + nonce + "/" + job.name
                             });
                             return next();
                         } else {

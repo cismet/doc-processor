@@ -49,8 +49,8 @@ exports.zip = function zip(result, conf, job, res, next) {
                         debug("remove " + jobdir);
                         execSync("rm -rf  " + jobdir);
                     }
-                    debug("Error retrieving (failFast="+conf.failFast+") "+url);
-                    if (conf.failFast===true) {
+                    debug("Error retrieving (failFast=" + conf.failFast + ") " + url);
+                    if (conf.failFast === true) {
                         res.writeHead(500);
                         res.end(e.message);
                     }
@@ -74,8 +74,8 @@ exports.zip = function zip(result, conf, job, res, next) {
                         debug("remove " + jobdir);
                         execSync("rm -rf  " + jobdir);
                     }
-                    debug("Error retrieving (failFast="+conf.failFast+") "+url);
-                    if (conf.failFast===true) {
+                    debug("Error retrieving (failFast=" + conf.failFast + ") " + url);
+                    if (conf.failFast === true) {
                         res.writeHead(500);
                         res.end(e.message);
                     }
@@ -93,12 +93,12 @@ exports.zip = function zip(result, conf, job, res, next) {
         if (!err) {
 
             //Only changes the encoding of the filenames
-            let encodingCMD="";
-            if (job.encoding && conf.allowedEncodings.indexOf(job.encoding)!=-1) {
-                encodingCMD="convmv --notest -r -f "+conf.serverSourceEncoding+" -t "+job.encoding+" * && ";
+            let encodingCMD = "";
+            if (job.encoding && conf.allowedEncodings.indexOf(job.encoding) != -1) {
+                encodingCMD = "convmv --notest -r -f " + conf.serverSourceEncoding + " -t " + job.encoding + " * && ";
             }
 
-            var cmd = encodingCMD+"zip -r -X ../out.zip *"
+            var cmd = encodingCMD + "zip -r -X ../out.zip *"
             execAsync(cmd, {
                 "cwd": indir
             }, function (error, stdout, stderr) {
@@ -125,8 +125,8 @@ exports.zip = function zip(result, conf, job, res, next) {
                         }
                         if (result === 'DOWNLOAD') {
                             res.writeHead(200, {
-                                "Content-Disposition":"filename=" + job.name + ".zip",
-                                "Content-Type":"application/zip"
+                                "Content-Disposition": "filename=" + job.name + ".zip",
+                                "Content-Type": "application/zip"
                             });
                             res.end(data);
                             if (!conf.keepFilesForDebugging) {
@@ -140,8 +140,8 @@ exports.zip = function zip(result, conf, job, res, next) {
                             res.send(200, {
                                 status: 200,
                                 id: nonce,
-                                href: conf.server+"/api/download/zip/"+nonce+"/"+job.name
-                                
+                                href: conf.server + "/api/download/zip/" + nonce + "/" + job.name
+
                             });
                             return next();
                         } else {
@@ -164,7 +164,7 @@ exports.zip = function zip(result, conf, job, res, next) {
             debug("Zipping skipped due to an error", err);
             let e = new Error("Zipping skipped due to an error");
             res.writeHead(500);
-            res.end(e.message);            
+            res.end(e.message);
             return next();
         }
     });

@@ -60,17 +60,17 @@ describe('ZIP Tests', () => {
             let conf = {
                 "name": "conf00",
                 "files": [{
-                        "uri": "http://localhost:" + port + "/testresources/1.pdf",
-                        "folder": "a"
-                    },
-                    {
-                        "uri": "http://localhost:" + port + "/testresources/2.pdf",
-                        "folder": "b"
-                    },
-                    {
-                        "uri": "http://localhost:" + port + "/testresources/3.pdf",
-                        "folder": "z"
-                    },
+                    "uri": "http://localhost:" + port + "/testresources/1.pdf",
+                    "folder": "a"
+                },
+                {
+                    "uri": "http://localhost:" + port + "/testresources/2.pdf",
+                    "folder": "b"
+                },
+                {
+                    "uri": "http://localhost:" + port + "/testresources/3.pdf",
+                    "folder": "z"
+                },
                 ]
             }
             chai.request(server)
@@ -105,17 +105,17 @@ describe('ZIP Tests', () => {
             let conf = {
                 "name": "conf00",
                 "files": [{
-                        "uri": "http://localhost:" + port + "/testresources/1.pdf",
-                        "folder": "a"
-                    },
-                    {
-                        "uri": "http://localhost:" + port + "/testresources/2.pdf",
-                        "folder": "b"
-                    },
-                    {
-                        "uri": "http://localhost:" + port + "/testresources/3.pdf",
-                        "folder": "z"
-                    },
+                    "uri": "http://localhost:" + port + "/testresources/1.pdf",
+                    "folder": "a"
+                },
+                {
+                    "uri": "http://localhost:" + port + "/testresources/2.pdf",
+                    "folder": "b"
+                },
+                {
+                    "uri": "http://localhost:" + port + "/testresources/3.pdf",
+                    "folder": "z"
+                },
                 ]
             }
             chai.request(server)
@@ -155,25 +155,25 @@ describe('ZIP Tests', () => {
             let conf = {
                 "name": "conf01",
                 "files": [{
-                        "uri": "http://localhost:" + port + "/testresources/1.pdf",
-                        "folder": "a"
-                    },
-                    {
-                        "uri": "http://localhost:" + port + "/testresources/2.pdf",
-                        "folder": "b"
-                    },
-                    {
-                        "uri": "http://localhost:" + port + "/testresources/3.pdf",
-                        "folder": "z"
-                    },
-                    {
-                        "uri": "http://localhost:" + port + "/testresources/4.pdf",
-                        "folder": "z"
-                    },
-                    {
-                        "uri": "http://localhost:" + port + "/testresources/5.pdf",
-                        "folder": "z"
-                    },
+                    "uri": "http://localhost:" + port + "/testresources/1.pdf",
+                    "folder": "a"
+                },
+                {
+                    "uri": "http://localhost:" + port + "/testresources/2.pdf",
+                    "folder": "b"
+                },
+                {
+                    "uri": "http://localhost:" + port + "/testresources/3.pdf",
+                    "folder": "z"
+                },
+                {
+                    "uri": "http://localhost:" + port + "/testresources/4.pdf",
+                    "folder": "z"
+                },
+                {
+                    "uri": "http://localhost:" + port + "/testresources/5.pdf",
+                    "folder": "z"
+                },
                 ]
             }
             chai.request(server)
