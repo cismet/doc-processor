@@ -1,6 +1,6 @@
 {
   "name": "doc-processor",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Small service to merge or zip existing pdfs ",
   "main": "server.js",
   "scripts": {
