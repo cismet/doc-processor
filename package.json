@@ -5,7 +5,10 @@
   "main": "server.js",
   "scripts": {
     "test": "node_modules/.bin/mocha",
-    "start": "node start.js"
+    "start": "node start.js",
+    "postversion": "sed '/^.*\"version\":.*$/d' package.json > .package.json.without.version && echo $npm_package_version > .version && git rev-parse HEAD > .githash",
+    "build:docker": "npm run postversion && VERSION=`echo $npm_package_version| sed 's/\\.[0-9]*-SNAPSHOT.*$/-SNAPSHOT/'`; docker buildx build --platform=linux/amd64,linux/arm64 -t cismet/$npm_package_name -t cismet/$npm_package_name:$VERSION .",
+    "publish:docker": "npm run postversion && VERSION=`echo $npm_package_version| sed 's/\\.[0-9]*-SNAPSHOT.*$/-SNAPSHOT/'`; docker buildx build --push --platform=linux/amd64,linux/arm64 -t cismet/$npm_package_name -t cismet/$npm_package_name:$VERSION ."
   },
   "author": "Thorsten Hell <th@cismet.de> (https://www.cismet.de)",
   "license": "MIT",

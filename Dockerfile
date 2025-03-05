@@ -1,4 +1,4 @@
-FROM node
+FROM node:lts
 RUN apt-get update -y
 RUN apt-get install -y locales
 RUN apt-get install -y zip
@@ -41,6 +41,3 @@ EXPOSE 8081
 
 
 CMD [ "npm", "start" ]
-
-
-
