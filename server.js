@@ -128,6 +128,10 @@ function respondForPOSTProcessAndWait(what, req, res, next) {
         jsonBody = req.body;
     }
 
+    if (process.env.LOGGING === 'DEBUG') {
+        console.log(`[${new Date().toISOString()}] Processing request for '${req.params.processor}' with properties:`, jsonBody);
+    }
+
     let check = requestTest(req, jsonBody);
 
     if (check.code == 200) {

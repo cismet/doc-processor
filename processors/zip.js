@@ -10,6 +10,17 @@ var urlencode = require('urlencode');
 const debug = require('debug')('doc-processor-server')
 let downloadHelper = require('./lib/tools.js').downloadHelper;
 
+function mkdirp(dir) {
+    if (fs.existsSync(dir)) return;
+    
+    try {
+        fs.mkdirSync(dir, { recursive: true });
+    } catch (err) {
+        if (err.code === 'EEXIST') return;
+        throw err;
+    }
+}
+
 exports.download = function download(hash, dlname, conf, res, next) {
     downloadHelper("zip", "zip", hash, dlname, conf, res, next);
 }
@@ -21,19 +32,20 @@ exports.zip = function zip(result, conf, job, res, next) {
     //Mkdirs
     let jobdir = conf.tmpFolder + "/job-zip-" + nonce;
     var indir = jobdir + "/in"
-    fs.mkdirSync(jobdir);
-    fs.mkdirSync(indir);
+    mkdirp(jobdir);
+    mkdirp(indir);
     //Download
     var threads = 15;
     async.eachLimit(job.files, threads, function (task, next) {
-        if (!fs.existsSync(indir + "/" + task.folder)) {
-            fs.mkdirSync(indir + "/" + task.folder);
-        }
+        const folderPath = task.folder || ''; // default to empty string if folder is undefined
+        const targetDir = path.join(indir, folderPath);
+        mkdirp(targetDir);
+        
         var filename = path.basename(task.uri);
         var urlencodedFilename = urlencode(path.basename(task.uri));
         var urlprefix = path.dirname(task.uri);
         var url = urlprefix + "/" + urlencodedFilename;
-        var file = fs.createWriteStream(indir + "/" + task.folder + "/" + filename);
+        var file = fs.createWriteStream(path.join(targetDir, filename));
         debug("go for " + url);
         if ((task.uri.startsWith("https"))) {
             var request = https.get(url, function (response) {
