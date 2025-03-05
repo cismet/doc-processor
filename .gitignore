@@ -61,3 +61,6 @@ typings/
 tmp
 servicetmp
 localconfig.json
+.githash
+.package.json.without.version
+.version
